@@ -4,6 +4,7 @@ A collection of Max externals used in the device development of Ternär Music Te
 
 ## externals
 
+- **redux** a bitrate reducer with ulaw compansion
 - **ysvf** is a state-variable filter based on the Y filters by [Chris Johnson](https://github.com/airwindows)
 
 ## building
