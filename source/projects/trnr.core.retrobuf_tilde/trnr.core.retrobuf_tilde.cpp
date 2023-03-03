@@ -30,7 +30,7 @@ public:
 
     message<> trigger { this, "bang", "Trigger the sample",
         MIN_FUNCTION {
-            playbackPos = startPos;
+            if (sync) playbackPos = startPos;
             return {};
         }
     };
@@ -44,7 +44,14 @@ public:
     };
     
 	attribute<number, threadsafe::no> midinote {this, "midinote", 48};
-	attribute<bool, threadsafe::no> looping {this, "loop", false };
+	attribute<bool, threadsafe::no> loop { this, "loop", false };
+	attribute<bool, threadsafe::no> sync { this, "sync", true, 
+        setter { MIN_FUNCTION {
+            if (!args[0]) {
+                playbackPos = startPos;
+            }
+            return args;
+        }}};
 	attribute<number, threadsafe::no, limit::clamp> velocity {this, "velocity", 100, range {0, 127}};
 	attribute<number, threadsafe::no, limit::clamp> deviation {this, "deviation", 5, range {1, 10}};
 	attribute<number, threadsafe::no> start {this, "start", 0, 
@@ -86,7 +93,7 @@ public:
                 double jitter = in4[i];
 
                 if (playbackPos >= endPos) {
-                    if (looping) {
+                    if (loop) {
                         playbackPos = startPos;
                     } else {
                         playbackPos = -1;
@@ -114,7 +121,6 @@ public:
 
                     reduceBitrate(outputL, outputR, bitrate);
                 }
-
 
                 // calculate imaging filter frequency + deviation
                 double filterFrequency = ((resamplerate / 2) * noteRatio) * deviation;
