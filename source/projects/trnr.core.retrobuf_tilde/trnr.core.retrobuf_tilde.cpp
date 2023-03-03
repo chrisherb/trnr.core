@@ -52,7 +52,6 @@ public:
             }
             return args;
         }}};
-	attribute<number, threadsafe::no, limit::clamp> velocity {this, "velocity", 100, range {0, 127}};
 	attribute<number, threadsafe::no, limit::clamp> deviation {this, "deviation", 5, range {1, 10}};
 	attribute<number, threadsafe::no> start {this, "start", 0, 
         setter { MIN_FUNCTION {
@@ -121,7 +120,7 @@ public:
 
                     // calculate imaging filter frequency + deviation
                     double filterFrequency = ((resamplerate / 2) * noteRatio) * deviation;
-                    
+
                     filter1.processSample(outputL, filterFrequency, hostSamplerate);
                     filter2.processSample(outputR, filterFrequency, hostSamplerate);
                 }
