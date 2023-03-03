@@ -21,8 +21,6 @@ public:
     message<> dspsetup {this, "dspsetup",
         MIN_FUNCTION {
            playbackPos = -1;
-           startPos = 0;
-           endPos = 0;
            bufferSize = 0;
            return {};
        }
@@ -30,7 +28,7 @@ public:
 
     message<> trigger { this, "bang", "Trigger the sample",
         MIN_FUNCTION {
-            if (sync) playbackPos = startPos;
+            if (sync) playbackPos = clamp(start, 0, bufferSize);
             return {};
         }
     };
@@ -48,23 +46,13 @@ public:
 	attribute<bool, threadsafe::no> sync { this, "sync", true, 
         setter { MIN_FUNCTION {
             if (!args[0]) {
-                playbackPos = startPos;
+                playbackPos = clamp(start, 0, bufferSize);
             }
             return args;
         }}};
 	attribute<number, threadsafe::no, limit::clamp> deviation {this, "deviation", 5, range {1, 10}};
-	attribute<number, threadsafe::no> start {this, "start", 0, 
-        setter { MIN_FUNCTION {
-            double value = args[0];
-            startPos = clamp(value, 0, bufferSize);
-            return args;
-         }}};
-	attribute<number, threadsafe::no> end {this, "end", 0, 
-        setter { MIN_FUNCTION {
-            double value = args[0];
-            endPos = clamp(value, 0, bufferSize);
-            return args;
-         }}};
+	attribute<number, threadsafe::no> start {this, "start", 0, };
+	attribute<number, threadsafe::no> end {this, "end", 0, };
 
     void operator()(audio_bundle input, audio_bundle output) {
 
@@ -76,13 +64,12 @@ public:
         double* out2 = output.samples(1);
 
         buffer_lock<> buf(buffer); // gain access to the buffer~ content
+        bufferSize = buf.frame_count();
         size_t channelCount = buf.channel_count();
         double bufferSamplerate = buf.samplerate();
         double hostSamplerate = samplerate();
 
         if (buf.valid()) {
-            bufferSize = buf.frame_count();
-
             for (int i = 0; i < input.frame_count(); ++i) {
                 double outputL = 0;
                 double outputR = 0;
@@ -91,9 +78,9 @@ public:
                 double bitrate = in3[i];
                 double jitter = in4[i];
 
-                if (playbackPos >= endPos) {
+                if (playbackPos >= clamp(end, start, bufferSize)) {
                     if (loop) {
-                        playbackPos = startPos;
+                        playbackPos = clamp(start, 0, bufferSize);
                     } else {
                         playbackPos = -1;
                     }
@@ -137,8 +124,6 @@ public:
 private:
     double playbackPos;
     double bufferSize;
-    int startPos;
-    int endPos;
     chebyshev filter1;
     chebyshev filter2;
     ulaw compander;

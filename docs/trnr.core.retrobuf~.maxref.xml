@@ -67,11 +67,6 @@
 			<description></description>
 		</attribute>
 
-		<attribute name='velocity' get='1' set='1' type='float64' size='1' >
-			<digest></digest>
-			<description></description>
-		</attribute>
-
 		<attribute name='sync' get='1' set='1' type='long' size='1' >
 			<digest></digest>
 			<description></description>
