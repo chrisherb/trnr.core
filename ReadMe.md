@@ -4,9 +4,9 @@ A collection of Max externals used in the development of the M4L devices by Tern
 
 ## externals
 
-- **redux** a bitrate reducer with ulaw compansion
-- **ysvf** a state-variable filter based on the Y filters by [Chris Johnson](https://github.com/airwindows)
-- **retrobuf** read from a buffer like it's 1995
+- **[redux](https://github.com/ChrisHerb/trnr.core/blob/master/source/projects/trnr.core.redux_tilde/trnr.core.redux_tilde.cpp)** a bitrate reducer with ulaw compansion
+- **[ysvf](https://github.com/ChrisHerb/trnr.core/blob/master/source/projects/trnr.core.ysvf_tilde/trnr.core.ysvf_tilde.cpp)** a state-variable filter based on the Y filters by [Chris Johnson](https://github.com/airwindows)
+- **[retrobuf](https://github.com/ChrisHerb/trnr.core/blob/master/source/projects/trnr.core.retrobuf_tilde/trnr.core.retrobuf_tilde.cpp)** read from a buffer like it's 1995
 
 ## building
 
