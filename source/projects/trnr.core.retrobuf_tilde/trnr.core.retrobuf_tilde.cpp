@@ -21,13 +21,14 @@ public:
     message<> dspsetup {this, "dspsetup",
         MIN_FUNCTION {
            playbackPos = -1;
+           bufferSize = 0;
            return {};
        }
     };
 
     message<> trigger { this, "bang", "Trigger the sample",
         MIN_FUNCTION {
-            if (!looping) playbackPos = 0;
+            if (!looping) playbackPos = startPos;
             return {};
         }
     };
@@ -44,8 +45,18 @@ public:
 	attribute<int, threadsafe::no, limit::clamp> looping {this, "loop", 0, range {0, 1}};
 	attribute<number, threadsafe::no, limit::clamp> velocity {this, "velocity", 100, range {0, 127}};
 	attribute<number, threadsafe::no, limit::clamp> deviation {this, "deviation", 5, range {1, 10}};
-	attribute<number, threadsafe::no> start {this, "start", 0}; // TODO
-	attribute<number, threadsafe::no> end {this, "end", 0}; // TODO
+	attribute<number, threadsafe::no> start {this, "start", 0, 
+        setter { MIN_FUNCTION {
+            double value = args[0];
+            startPos = clamp(value, 0, bufferSize);
+            return args;
+         }}};
+	attribute<number, threadsafe::no> end {this, "end", 0, 
+        setter { MIN_FUNCTION {
+            double value = args[0];
+            endPos = clamp(value, 0, bufferSize);
+            return args;
+         }}};
 
     void operator()(audio_bundle input, audio_bundle output) {
 
@@ -64,6 +75,7 @@ public:
         if (buf.valid()) {
             for (int i = 0; i < input.frame_count(); ++i) {
 
+                bufferSize = buf.frame_count();
                 double outputL = 0;
                 double outputR = 0;
                 double pitch = in1[i];
@@ -71,9 +83,9 @@ public:
                 double bitrate = in3[i];
                 double jitter = in4[i];
 
-                if (playbackPos >= buf.frame_count()) {
+                if (playbackPos >= bufferSize) {
                     if (looping) {
-                        playbackPos = 0;
+                        playbackPos = startPos;
                     } else {
                         playbackPos = -1;
                     }
@@ -88,13 +100,12 @@ public:
                     playbackPos += noteRatio * (bufferSamplerate / hostSamplerate);
 
                     double noise1 = random(0, 1) * jitter;
-                    double frameCount = buf.frame_count();
-                    outputL = buf.lookup(wrap(quantizedIndex + noise1, frameCount), 0);
+                    outputL = buf.lookup(wrap(quantizedIndex + noise1, bufferSize), 0);
 
                     // get second channel if there is any
                     if (channelCount > 0) {
                         double noise2 = random(0, 1) * jitter;
-                        outputR = buf.lookup(wrap(quantizedIndex + noise2, frameCount), 1);
+                        outputR = buf.lookup(wrap(quantizedIndex + noise2, bufferSize), 1);
                     } else {
                         outputR = outputL;
                     }
@@ -118,6 +129,9 @@ public:
 
 private:
     double playbackPos;
+    double bufferSize;
+    int startPos;
+    int endPos;
     chebyshev filter1;
     chebyshev filter2;
     ulaw compander;
@@ -136,7 +150,7 @@ private:
         compander.decodeSamples(value1, value2);
     }
 
-    double clamp(double value, double min, double max) {
+    double clamp(double& value, double min, double max) {
         if (value < min) {
             value = min;
         } else if (value > max) {
