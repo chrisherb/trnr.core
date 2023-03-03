@@ -6,8 +6,8 @@
 
 <c74object name='trnr.core.redux~' category='lofi'>
 
-	<digest>Stereo bitrate reducer with ulaw companding </digest>
-	<description>Stereo bitrate reducer with ulaw companding </description>
+	<digest>Stereo bitrate reducer with ulaw compansion </digest>
+	<description>Stereo bitrate reducer with ulaw compansion </description>
 
 
 	<!--METADATA-->

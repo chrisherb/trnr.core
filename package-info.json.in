@@ -1,6 +1,6 @@
 {
   "author": "Christopher Herb",
-  "description": "Lightweight reference implementation of a package built using the Min-API.",
+  "description": "A collection of Max externals used in the development of the M4L devices by Ternär Music Technology",
   "homepatcher": "",
   "max_version_min": "8.0",
   "max_version_max": "none",
@@ -19,6 +19,6 @@
     "reverse_domain": "com.trnr"
   },
   "tags": ["audio"],
-  "version": "1.0.0",
+  "version": "0.0.1",
   "website": "https://github.com/ChrisHerb/trnr.core"
 }
