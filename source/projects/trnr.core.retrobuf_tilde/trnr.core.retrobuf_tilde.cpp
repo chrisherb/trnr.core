@@ -21,6 +21,8 @@ public:
     message<> dspsetup {this, "dspsetup",
         MIN_FUNCTION {
            playbackPos = -1;
+           startPos = 0;
+           endPos = 0;
            bufferSize = 0;
            return {};
        }
@@ -28,7 +30,7 @@ public:
 
     message<> trigger { this, "bang", "Trigger the sample",
         MIN_FUNCTION {
-            if (!looping) playbackPos = startPos;
+            playbackPos = startPos;
             return {};
         }
     };
@@ -42,7 +44,7 @@ public:
     };
     
 	attribute<number, threadsafe::no> midinote {this, "midinote", 48};
-	attribute<int, threadsafe::no, limit::clamp> looping {this, "loop", 0, range {0, 1}};
+	attribute<bool, threadsafe::no> looping {this, "loop", false };
 	attribute<number, threadsafe::no, limit::clamp> velocity {this, "velocity", 100, range {0, 127}};
 	attribute<number, threadsafe::no, limit::clamp> deviation {this, "deviation", 5, range {1, 10}};
 	attribute<number, threadsafe::no> start {this, "start", 0, 
@@ -73,9 +75,9 @@ public:
         double hostSamplerate = samplerate();
 
         if (buf.valid()) {
-            for (int i = 0; i < input.frame_count(); ++i) {
+            bufferSize = buf.frame_count();
 
-                bufferSize = buf.frame_count();
+            for (int i = 0; i < input.frame_count(); ++i) {
                 double outputL = 0;
                 double outputR = 0;
                 double pitch = in1[i];
@@ -83,7 +85,7 @@ public:
                 double bitrate = in3[i];
                 double jitter = in4[i];
 
-                if (playbackPos >= bufferSize) {
+                if (playbackPos >= endPos) {
                     if (looping) {
                         playbackPos = startPos;
                     } else {
