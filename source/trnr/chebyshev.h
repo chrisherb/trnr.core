@@ -4,7 +4,7 @@
 
 class chebyshev {
 public:
-    double processSample(double input, double frequency, double samplerate) {
+    void processSample(double& input, double frequency, double samplerate) {
 
         if (frequency >= 20000.f) {
             frequency = 20000.f;
@@ -46,11 +46,9 @@ public:
         auto Stage1 = B0 * input + State0;
         State0 = B1 * input + A1 * Stage1 + State1;
         State1 = B2 * input + A2 * Stage1;
-        auto output = B3 * Stage1 + State2;
-        State2 = B4 * Stage1 + A4 * output + State3;
-        State3 = B5 * Stage1 + A5 * output;
-
-        return output;
+        input = B3 * Stage1 + State2;
+        State2 = B4 * Stage1 + A4 * input + State3;
+        State3 = B5 * Stage1 + A5 * input;
     }
 
 private:

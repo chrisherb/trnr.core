@@ -104,30 +104,30 @@ public:
 
                 if (playbackPos > -1) {
                     double samplerateDivisor = hostSamplerate / clamp(resamplerate, 44, 44100);
-                    int quantizedIndex = floor(floor(playbackPos / samplerateDivisor) * samplerateDivisor);
+                    int quantizedIndex = static_cast<int>(static_cast<int>(playbackPos / samplerateDivisor) * samplerateDivisor);
 
                     playbackPos += noteRatio * (bufferSamplerate / hostSamplerate);
 
-                    double noise1 = random(0, 1) * jitter;
-                    outputL = buf.lookup(wrap(quantizedIndex + noise1, bufferSize), 0);
+                    outputL = buf.lookup(wrap(quantizedIndex + calcJitter(jitter), bufferSize), 0);
 
                     // get second channel if there is any
                     if (channelCount > 0) {
-                        double noise2 = random(0, 1) * jitter;
-                        outputR = buf.lookup(wrap(quantizedIndex + noise2, bufferSize), 1);
+                        outputR = buf.lookup(wrap(quantizedIndex + calcJitter(jitter), bufferSize), 1);
                     } else {
                         outputR = outputL;
                     }
 
                     reduceBitrate(outputL, outputR, bitrate);
+
+                    // calculate imaging filter frequency + deviation
+                    double filterFrequency = ((resamplerate / 2) * noteRatio) * deviation;
+                    
+                    filter1.processSample(outputL, filterFrequency, hostSamplerate);
+                    filter2.processSample(outputR, filterFrequency, hostSamplerate);
                 }
 
-                // calculate imaging filter frequency + deviation
-                double filterFrequency = ((resamplerate / 2) * noteRatio) * deviation;
-                double vel = velocity / 127;
-
-                out1[i] = filter1.processSample(outputL, filterFrequency, hostSamplerate) * vel;
-                out2[i] = filter2.processSample(outputR, filterFrequency, hostSamplerate) * vel;
+                out1[i] = outputL;
+                out2[i] = outputR;
             }
         }
         else {
@@ -156,6 +156,14 @@ private:
         value2 = round(value2 * resolution) / resolution;
 
         compander.decodeSamples(value1, value2);
+    }
+
+    int calcJitter(double jitter) {
+        if (jitter > 0) {
+            return static_cast<int>(random(0, 1) * jitter);
+        } else {
+            return 0;
+        }
     }
 
     double clamp(double& value, double min, double max) {
