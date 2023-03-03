@@ -100,7 +100,7 @@ public:
                     }
                 }
                     
-                double noteRatio = midiToRatio(midinote) + pitch;
+                double noteRatio = midiToRatio(midinote + pitch);
 
                 if (playbackPos > -1) {
                     double samplerateDivisor = hostSamplerate / clamp(resamplerate, 44, 44100);
