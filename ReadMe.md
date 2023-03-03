@@ -5,7 +5,8 @@ A collection of Max externals used in the development of the M4L devices by Tern
 ## externals
 
 - **redux** a bitrate reducer with ulaw compansion
-- **ysvf** is a state-variable filter based on the Y filters by [Chris Johnson](https://github.com/airwindows)
+- **ysvf** a state-variable filter based on the Y filters by [Chris Johnson](https://github.com/airwindows)
+- **retrobuf** read from a buffer like it's 1995
 
 ## building
 
