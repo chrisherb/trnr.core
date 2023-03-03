@@ -36,21 +36,6 @@
 
 	<attributelist>
 
-		<attribute name='gain' get='1' set='1' type='float64' size='1' >
-			<digest></digest>
-			<description></description>
-		</attribute>
-
-		<attribute name='filtertype' get='1' set='1' type='long' size='1' >
-			<digest></digest>
-			<description></description>
-		</attribute>
-
-		<attribute name='resonance' get='1' set='1' type='float64' size='1' >
-			<digest></digest>
-			<description></description>
-		</attribute>
-
 		<attribute name='output' get='1' set='1' type='float64' size='1' >
 			<digest></digest>
 			<description></description>
@@ -64,6 +49,11 @@
 		<attribute name='mix' get='1' set='1' type='float64' size='1' >
 			<digest></digest>
 			<description></description>
+		</attribute>
+
+		<attribute name='filtertype' get='1' set='1' type='long' size='1' >
+			<digest>0 = lowpass, 1 = highpass, 2 = bandpass, 3 = notch </digest>
+			<description>0 = lowpass, 1 = highpass, 2 = bandpass, 3 = notch </description>
 		</attribute>
 
 	</attributelist>

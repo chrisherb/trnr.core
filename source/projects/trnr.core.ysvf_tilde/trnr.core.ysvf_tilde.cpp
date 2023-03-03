@@ -15,27 +15,11 @@ public:
 	inlet<> in1 {this, "(signal) Input1"};
 	inlet<> in2 {this, "(signal) Input2"};
 	inlet<> in3 {this, "(signal) Frequency"};
+	inlet<> in4 {this, "(signal) Resonance"};
+	inlet<> in5 {this, "(signal) Gain"};
 	outlet<> out1 {this, "(signal) Output1", "signal"};
 	outlet<> out2 {this, "(signal) Output2", "signal"};
 
-	attribute<number, threadsafe::no, limit::clamp> gain { this, "gain", 0.1, range {0.0, 1.0}, 
-        setter { MIN_FUNCTION { 
-            lowpass.setDrive(args[0]);
-            highpass.setDrive(args[0]);
-            bandpass.setDrive(args[0]);
-            notch.setDrive(args[0]);
-            return args;
-        }}
-    };
-	attribute<number, threadsafe::no, limit::clamp> resonance {this, "resonance", 0.1, range {0.0, 1.0}, 
-        setter { MIN_FUNCTION { 
-            lowpass.setResonance(args[0]);
-            highpass.setResonance(args[0]);
-            bandpass.setResonance(args[0]);
-            notch.setResonance(args[0]);
-            return args;
-        }}
-    };
 	attribute<number, threadsafe::no, limit::clamp> edge {this, "edge", 0.1, range {0.0, 1.0}, 
         setter { MIN_FUNCTION { 
             lowpass.setEdge(args[0]);
@@ -67,34 +51,41 @@ public:
         description { "0 = lowpass, 1 = highpass, 2 = bandpass, 3 = notch" } 
     };
 
-	void operator()(audio_bundle _input, audio_bundle _output) {
+	void operator()(audio_bundle input, audio_bundle output) {
 
         double sampleRate = samplerate();
-		long sampleFrames = _input.frame_count();
+		long sampleFrames = input.frame_count();
 
-        double freq = _input.samples(2)[0];
-        if (freq > 1.0)
-            freq = 1.0;
-        else if (freq < 0.0)
-            freq = 0.0;
-
+        double freq = clamp(input.samples(2)[0], 0, 1);
         lowpass.setFrequency(freq);
         highpass.setFrequency(freq);
         bandpass.setFrequency(freq);
         notch.setFrequency(freq);
+
+        double res = clamp(input.samples(3)[0], 0, 1);
+        lowpass.setResonance(res);
+        highpass.setResonance(res);
+        bandpass.setResonance(res);
+        notch.setResonance(res);
+
+        double gain = clamp(input.samples(4)[0], 0, 1);
+        lowpass.setDrive(gain);
+        highpass.setDrive(gain);
+        bandpass.setDrive(gain);
+        notch.setDrive(gain);
         
         switch(filtertype){
             case 0:
-                lowpass.processblock(_input.samples(), _output.samples(), sampleRate, sampleFrames);
+                lowpass.processblock(input.samples(), output.samples(), sampleRate, sampleFrames);
                 break;
             case 1:
-                highpass.processblock(_input.samples(), _output.samples(), sampleRate, sampleFrames);
+                highpass.processblock(input.samples(), output.samples(), sampleRate, sampleFrames);
                 break;
             case 2:
-                bandpass.processblock(_input.samples(), _output.samples(), sampleRate, sampleFrames);
+                bandpass.processblock(input.samples(), output.samples(), sampleRate, sampleFrames);
                 break;
             case 3:
-                notch.processblock(_input.samples(), _output.samples(), sampleRate, sampleFrames);
+                notch.processblock(input.samples(), output.samples(), sampleRate, sampleFrames);
                 break;
         }
     }
@@ -104,6 +95,15 @@ private:
     yhighpass highpass;
     ybandpass bandpass;
     ynotch notch;
+
+    double clamp(double& value, double min, double max) {
+        if (value < min) {
+            value = min;
+        } else if (value > max) {
+            value = max;
+        }
+        return value;
+    }
 };
 
 MIN_EXTERNAL(ysvf);
