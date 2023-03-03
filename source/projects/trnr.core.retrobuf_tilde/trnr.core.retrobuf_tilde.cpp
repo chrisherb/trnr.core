@@ -1,5 +1,6 @@
 #include "c74_min.h"
 #include "../../trnr/chebyshev.h"
+#include "../../trnr/ulaw.h"
 
 using namespace c74::min;
 using namespace c74::min::lib::math;
@@ -97,13 +98,14 @@ public:
                     } else {
                         outputR = outputL;
                     }
+
+                    reduceBitrate(outputL, outputR, bitrate);
                 }
+
 
                 // calculate imaging filter frequency + deviation
                 double filterFrequency = ((resamplerate / 2) * noteRatio) * deviation;
                 double vel = velocity / 127;
-
-                // TODO: bitrate reduction
 
                 out1[i] = filter1.processSample(outputL, filterFrequency, hostSamplerate) * vel;
                 out2[i] = filter2.processSample(outputR, filterFrequency, hostSamplerate) * vel;
@@ -118,32 +120,37 @@ private:
     double playbackPos;
     chebyshev filter1;
     chebyshev filter2;
+    ulaw compander;
 
-    float midiToRatio(float midiNote)
-    {
+    float midiToRatio(float midiNote) {
         return powf(powf(2, midiNote - 60.f), 1.f / 12.f);
     }
 
+    void reduceBitrate(double& value1, double& value2, double bit) {
+        compander.encodeSamples(value1, value2);
+
+        float resolution = powf(2, bit);
+        value1 = round(value1 * resolution) / resolution;
+        value2 = round(value2 * resolution) / resolution;
+
+        compander.decodeSamples(value1, value2);
+    }
+
     double clamp(double value, double min, double max) {
-        
         if (value < min) {
             value = min;
         } else if (value > max) {
             value = max;
         }
-
         return value;
     }
 
     double wrap(double value, double max) {
-
         while (value > max) {
             value =- max;
         }
-
         return value;
     }
 };
-
 
 MIN_EXTERNAL(retrobuf);
