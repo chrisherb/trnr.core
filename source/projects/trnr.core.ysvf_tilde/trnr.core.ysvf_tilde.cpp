@@ -1,8 +1,8 @@
 #include "c74_min.h"
-#include "ylowpass.h"
-#include "yhighpass.h"
-#include "ybandpass.h"
-#include "ynotch.h"
+#include "../../trnr-lib/ylowpass.h"
+#include "../../trnr-lib/yhighpass.h"
+#include "../../trnr-lib/ybandpass.h"
+#include "../../trnr-lib/ynotch.h"
 
 using namespace c74::min;
 

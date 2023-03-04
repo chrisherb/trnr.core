@@ -1,5 +1,5 @@
 #include "c74_min.h"
-#include "../../trnr/ulaw.h"
+#include "../../trnr-lib/ulaw.h"
 
 using namespace c74::min;
 

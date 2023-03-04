@@ -1,12 +1,11 @@
-#pragma once
 #define _USE_MATH_DEFINES
+#include <math.h>
 #include <array>
 #include <vector>
-#include <math.h>
 
-class ylowpass {
+class ynotch {
 public:
-    ylowpass()
+    ynotch()
         : A { 0.1f }
         , B { 1.0f }
         , C { 0.0f }
@@ -65,9 +64,9 @@ public:
     void processblock(double** inputs, double** outputs, int sampleRate, int blockSize)
     {
         double* in1 = inputs[0];
-		double* in2 = inputs[1];
-		double* out1 = outputs[0];
-		double* out2 = outputs[1];
+        double* in2 = inputs[1];
+        double* out1 = outputs[0];
+        double* out2 = outputs[1];
 
         int inFramesToProcess = blockSize;
         double overallscale = 1.0;
@@ -81,7 +80,7 @@ public:
         if (biquad[biq_freq] < 15.0)
             biquad[biq_freq] = 15.0;
         biquad[biq_freq] /= sampleRate;
-        biquad[biq_reso] = (pow(C, 2) * 15.0) + 0.5571;
+        biquad[biq_reso] = (pow(C, 2) * 15.0) + 0.0001;
         biquad[biq_aA0] = biquad[biq_aB0];
         biquad[biq_aA1] = biquad[biq_aB1];
         biquad[biq_aA2] = biquad[biq_aB2];
@@ -91,10 +90,10 @@ public:
         // to the A section and now it's the new starting point.
         double K = tan(M_PI * biquad[biq_freq]);
         double norm = 1.0 / (1.0 + K / biquad[biq_reso] + K * K);
-        biquad[biq_aB0] = K * K * norm;
-        biquad[biq_aB1] = 2.0 * biquad[biq_aB0];
+        biquad[biq_aB0] = (1.0 + K * K) * norm;
+        biquad[biq_aB1] = 2.0 * (K * K - 1) * norm;
         biquad[biq_aB2] = biquad[biq_aB0];
-        biquad[biq_bB1] = 2.0 * (K * K - 1.0) * norm;
+        biquad[biq_bB1] = biquad[biq_aB1];
         biquad[biq_bB2] = (1.0 - K / biquad[biq_reso] + K * K) * norm;
         // for the coefficient-interpolated biquad filter
 

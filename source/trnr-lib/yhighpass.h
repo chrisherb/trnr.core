@@ -1,8 +1,7 @@
-#pragma once
 #define _USE_MATH_DEFINES
+#include <math.h>
 #include <array>
 #include <vector>
-#include <math.h>
 
 class yhighpass {
 public:

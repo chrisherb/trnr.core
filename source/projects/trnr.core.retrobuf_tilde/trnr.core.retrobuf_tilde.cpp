@@ -1,6 +1,6 @@
 #include "c74_min.h"
-#include "../../trnr/chebyshev.h"
-#include "../../trnr/ulaw.h"
+#include "../../trnr-lib/chebyshev.h"
+#include "../../trnr-lib/ulaw.h"
 
 using namespace c74::min;
 
