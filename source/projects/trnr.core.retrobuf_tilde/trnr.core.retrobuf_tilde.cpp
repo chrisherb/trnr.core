@@ -3,7 +3,6 @@
 #include "../../trnr/ulaw.h"
 
 using namespace c74::min;
-using namespace c74::min::lib::math;
 
 class retrobuf : public object<retrobuf>, public vector_operator<> {
 public:
@@ -76,7 +75,7 @@ public:
                 double pitch = in1[i];
                 double resamplerate = in2[i];
                 double bitrate = in3[i];
-                double jitter = in4[i];
+                int jitter = in4[i];
 
                 if (playbackPos >= clamp(end, start, bufferSize)) {
                     if (loop) {
@@ -142,9 +141,9 @@ private:
         compander.decodeSamples(value1, value2);
     }
 
-    int calcJitter(double jitter) {
+    int calcJitter(int jitter) {
         if (jitter > 0) {
-            return static_cast<int>(random(0, 1) * jitter);
+            return static_cast<int>(rand() % jitter);
         } else {
             return 0;
         }
