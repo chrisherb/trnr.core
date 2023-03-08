@@ -5,6 +5,7 @@
 #include "../../trnr-lib/ynotch.h"
 
 using namespace c74::min;
+using namespace trnr::core::lib;
 
 class ysvf : public object<ysvf>, public vector_operator<> {
 public:

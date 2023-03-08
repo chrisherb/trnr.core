@@ -3,6 +3,7 @@
 #include <array>
 #include <vector>
 
+namespace trnr::core::lib {
 class ybandpass {
 public:
     ybandpass()
@@ -300,3 +301,4 @@ private:
     float E;
     float F; // parameters. Always 0-1, and we scale/alter them elsewhere.
 };
+}
