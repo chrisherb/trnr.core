@@ -16,6 +16,7 @@ public:
         , op1(samplerate)
         , op2(samplerate)
         , op3(samplerate)
+        , bit_resolution(12.f)
     {
     }
 
@@ -27,6 +28,7 @@ public:
     int algorithm;
     float pitch_env_amt;
     float feedback_amt;
+    float bit_resolution;
     tx_sineosc feedback_osc;
     tx_envelope pitch_env;
     tx_operator op1;
@@ -61,7 +63,7 @@ public:
         // reset trigger
         trigger = false;
 
-        return output;
+        return redux(output, bit_resolution);
     }
 
     bool is_busy() { return gate || op1.envelope.is_busy() || op2.envelope.is_busy() || op3.envelope.is_busy(); }
@@ -151,6 +153,14 @@ private:
 
         float op1_freq = frequency * op1.ratio;
         return op1.process_sample(gate, trigger, op1_freq, velocity, op2_signal + op3_signal) * op1.amplitude;
+    }
+
+    float redux(float& value, float resolution)
+    {
+        float res = powf(2, resolution);
+        value = roundf(value * res) / res;
+
+        return value;
     }
 };
 }
