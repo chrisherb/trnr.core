@@ -4,7 +4,7 @@
 using namespace c74::min;
 using namespace trnr::core::lib;
 
-class txvoice : public object<txvoice>, public vector_operator<> {
+class triplex : public object<triplex>, public vector_operator<> {
 private:
     bool initialized;
 public:
@@ -488,4 +488,4 @@ private:
     std::unique_ptr<tx_voice> triplex_voice { nullptr };
 };
 
-MIN_EXTERNAL(txvoice);
+MIN_EXTERNAL(triplex);
