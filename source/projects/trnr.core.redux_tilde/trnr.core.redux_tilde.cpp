@@ -2,6 +2,7 @@
 #include "../../trnr-lib/ulaw.h"
 
 using namespace c74::min;
+using namespace trnr::core::lib;
 
 class redux : public object<redux>, public vector_operator<> {
 public:
@@ -32,7 +33,7 @@ public:
 			double inputSampleR = *in2;
 
             // ulaw encoding
-            compander.encodeSamples(inputSampleL, inputSampleR);
+            compander.encode_samples(inputSampleL, inputSampleR);
 
             // bit reduction
             float resolution = powf(2, bit);
@@ -40,7 +41,7 @@ public:
 			inputSampleR = round(inputSampleR * resolution) / resolution;
 
             // ulaw decoding
-            compander.decodeSamples(inputSampleL, inputSampleR);
+            compander.decode_samples(inputSampleL, inputSampleR);
 			
             *out1 = inputSampleL;
 			*out2 = inputSampleR;

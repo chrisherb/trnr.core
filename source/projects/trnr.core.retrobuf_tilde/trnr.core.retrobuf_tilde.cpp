@@ -133,13 +133,13 @@ private:
     }
 
     void reduceBitrate(double& value1, double& value2, double bit) {
-        compander.encodeSamples(value1, value2);
+        compander.encode_samples(value1, value2);
 
         float resolution = powf(2, bit);
         value1 = round(value1 * resolution) / resolution;
         value2 = round(value2 * resolution) / resolution;
 
-        compander.decodeSamples(value1, value2);
+        compander.decode_samples(value1, value2);
     }
 
     int calcJitter(int jitter) {

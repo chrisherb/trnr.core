@@ -2,23 +2,24 @@
 #include <cstdint>
 #include <cmath>
 
+namespace trnr::core::lib {
 class ulaw {
 public:
     ulaw() {
-        fpdL = 1.0; while (fpdL < 16386) fpdL = rand()*UINT32_MAX;
-        fpdR = 1.0; while (fpdR < 16386) fpdR = rand()*UINT32_MAX;
+        fpd_l = 1.0; while (fpd_l < 16386) fpd_l = rand()*UINT32_MAX;
+        fpd_r = 1.0; while (fpd_r < 16386) fpd_r = rand()*UINT32_MAX;
     }
 
-    void encodeSamples(double& inputSampleL, double& inputSampleR) {
+    void encode_samples(double& input_sample_l, double& input_sample_r) {
 
         // ulaw encoding
-        static int noisesourceL = 0;
-        static int noisesourceR = 850010;
+        static int noisesource_l = 0;
+        static int noisesource_r = 850010;
         int residue;
         double applyresidue;
         
-        noisesourceL = noisesourceL % 1700021; noisesourceL++;
-        residue = noisesourceL * noisesourceL;
+        noisesource_l = noisesource_l % 1700021; noisesource_l++;
+        residue = noisesource_l * noisesource_l;
         residue = residue % 170003; residue *= residue;
         residue = residue % 17011; residue *= residue;
         residue = residue % 1709; residue *= residue;
@@ -27,13 +28,13 @@ public:
         applyresidue = residue;
         applyresidue *= 0.00000001;
         applyresidue *= 0.00000001;
-        inputSampleL += applyresidue;
-        if (inputSampleL<1.2e-38 && -inputSampleL<1.2e-38) {
-            inputSampleL -= applyresidue;
+        input_sample_l += applyresidue;
+        if (input_sample_l<1.2e-38 && -input_sample_l<1.2e-38) {
+            input_sample_l -= applyresidue;
         }
         
-        noisesourceR = noisesourceR % 1700021; noisesourceR++;
-        residue = noisesourceR * noisesourceR;
+        noisesource_r = noisesource_r % 1700021; noisesource_r++;
+        residue = noisesource_r * noisesource_r;
         residue = residue % 170003; residue *= residue;
         residue = residue % 17011; residue *= residue;
         residue = residue % 1709; residue *= residue;
@@ -42,48 +43,49 @@ public:
         applyresidue = residue;
         applyresidue *= 0.00000001;
         applyresidue *= 0.00000001;
-        inputSampleR += applyresidue;
-        if (inputSampleR<1.2e-38 && -inputSampleR<1.2e-38) {
-            inputSampleR -= applyresidue;
+        input_sample_r += applyresidue;
+        if (input_sample_r<1.2e-38 && -input_sample_r<1.2e-38) {
+            input_sample_r -= applyresidue;
         }
         
-        if (inputSampleL > 1.0) inputSampleL = 1.0;
-        if (inputSampleL < -1.0) inputSampleL = -1.0;
+        if (input_sample_l > 1.0) input_sample_l = 1.0;
+        if (input_sample_l < -1.0) input_sample_l = -1.0;
         
-        if (inputSampleR > 1.0) inputSampleR = 1.0;
-        if (inputSampleR < -1.0) inputSampleR = -1.0;
+        if (input_sample_r > 1.0) input_sample_r = 1.0;
+        if (input_sample_r < -1.0) input_sample_r = -1.0;
         
-        if (inputSampleL > 0) inputSampleL = log(1.0+(255*fabs(inputSampleL))) / log(256);
-        if (inputSampleL < 0) inputSampleL = -log(1.0+(255*fabs(inputSampleL))) / log(256);
+        if (input_sample_l > 0) input_sample_l = log(1.0+(255*fabs(input_sample_l))) / log(256);
+        if (input_sample_l < 0) input_sample_l = -log(1.0+(255*fabs(input_sample_l))) / log(256);
         
-        if (inputSampleR > 0) inputSampleR = log(1.0+(255*fabs(inputSampleR))) / log(256);
-        if (inputSampleR < 0) inputSampleR = -log(1.0+(255*fabs(inputSampleR))) / log(256);
+        if (input_sample_r > 0) input_sample_r = log(1.0+(255*fabs(input_sample_r))) / log(256);
+        if (input_sample_r < 0) input_sample_r = -log(1.0+(255*fabs(input_sample_r))) / log(256);
     }
 
-    void decodeSamples(double& inputSampleL, double& inputSampleR) {
+    void decode_samples(double& input_sample_l, double& input_sample_r) {
 
         // ulaw decoding
-        if (fabs(inputSampleL)<1.18e-23) inputSampleL = fpdL * 1.18e-17;
-        if (fabs(inputSampleR)<1.18e-23) inputSampleR = fpdR * 1.18e-17;
+        if (fabs(input_sample_l)<1.18e-23) input_sample_l = fpd_l * 1.18e-17;
+        if (fabs(input_sample_r)<1.18e-23) input_sample_r = fpd_r * 1.18e-17;
         
-        if (inputSampleL > 1.0) inputSampleL = 1.0;
-        if (inputSampleL < -1.0) inputSampleL = -1.0;
+        if (input_sample_l > 1.0) input_sample_l = 1.0;
+        if (input_sample_l < -1.0) input_sample_l = -1.0;
         
-        if (inputSampleR > 1.0) inputSampleR = 1.0;
-        if (inputSampleR < -1.0) inputSampleR = -1.0;
+        if (input_sample_r > 1.0) input_sample_r = 1.0;
+        if (input_sample_r < -1.0) input_sample_r = -1.0;
         
-        if (inputSampleL > 0) inputSampleL = (pow(256,fabs(inputSampleL))-1.0) / 255;
-        if (inputSampleL < 0) inputSampleL = -(pow(256,fabs(inputSampleL))-1.0) / 255;
+        if (input_sample_l > 0) input_sample_l = (pow(256,fabs(input_sample_l))-1.0) / 255;
+        if (input_sample_l < 0) input_sample_l = -(pow(256,fabs(input_sample_l))-1.0) / 255;
         
-        if (inputSampleR > 0) inputSampleR = (pow(256,fabs(inputSampleR))-1.0) / 255;
-        if (inputSampleR < 0) inputSampleR = -(pow(256,fabs(inputSampleR))-1.0) / 255;
+        if (input_sample_r > 0) input_sample_r = (pow(256,fabs(input_sample_r))-1.0) / 255;
+        if (input_sample_r < 0) input_sample_r = -(pow(256,fabs(input_sample_r))-1.0) / 255;
 
         // 64 bit stereo floating point dither
-        fpdL ^= fpdL << 13; fpdL ^= fpdL >> 17; fpdL ^= fpdL << 5;
-        fpdR ^= fpdR << 13; fpdR ^= fpdR >> 17; fpdR ^= fpdR << 5;
+        fpd_l ^= fpd_l << 13; fpd_l ^= fpd_l >> 17; fpd_l ^= fpd_l << 5;
+        fpd_r ^= fpd_r << 13; fpd_r ^= fpd_r >> 17; fpd_r ^= fpd_r << 5;
     }
 
 private:
-    uint32_t fpdL;
-	uint32_t fpdR;
+    uint32_t fpd_l;
+	uint32_t fpd_r;
 };
+}
