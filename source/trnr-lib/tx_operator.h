@@ -5,11 +5,11 @@
 namespace trnr::core::lib {
 class tx_operator {
 public:
-    tx_operator(double sampleRate)
+    tx_operator(double samplerate)
         : ratio { 1 }
         , amplitude { 1.0f }
-        , envelope(sampleRate)
-        , oscillator(sampleRate)
+        , envelope(samplerate)
+        , oscillator(samplerate)
     {
     }
 
@@ -18,22 +18,22 @@ public:
     float ratio;
     float amplitude;
 
-    float processSamplePM(const bool& gate, const bool& trigger, const float& frequency, const float& velocity, const float& pm = 0) {
+    float process_sample(const bool& gate, const bool& trigger, const float& frequency, const float& velocity, const float& pm = 0) {
 
-        float env = envelope.processSample(gate, trigger);
+        float env = envelope.process_sample(gate, trigger);
 
         // drifts and sounds better!
-        if (envelope.isBusy()) {
-            double osc = oscillator.processSample(trigger, frequency, pm);
+        if (envelope.is_busy()) {
+            double osc = oscillator.process_sample(trigger, frequency, pm);
             return osc * env * velocity;
         } else {
             return 0.;
         }
     }
 
-    void setSampleRate(double sampleRate) {
-        this->envelope.setSampleRate(sampleRate);
-        this->oscillator.setSampleRate(sampleRate);
+    void set_samplerate(double samplerate) {
+        this->envelope.set_samplerate(samplerate);
+        this->oscillator.setSampleRate(samplerate);
     }
 };
 }

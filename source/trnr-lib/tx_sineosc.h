@@ -5,51 +5,51 @@ namespace trnr::core::lib {
 
 class tx_sineosc {
 public:
-    float phaseResolution;
-    bool phaseReset;
+    float phase_resolution;
+    bool phase_reset;
 
-    tx_sineosc(double sampleRate) 
-        : sampleRate { sampleRate }
-        , phaseResolution { 16.f }
+    tx_sineosc(double _samplerate) 
+        : samplerate { _samplerate }
+        , phase_resolution { 16.f }
         , phase { 0. }
         , history { 0. }
-        , phaseReset { false }
+        , phase_reset { false }
     {
     }
 
-    float processSample(bool trigger, float frequency, float phaseModulation = 0.f) {
-        if (trigger && phaseReset) {
+    float process_sample(bool trigger, float frequency, float phase_modulation = 0.f) {
+        if (trigger && phase_reset) {
             phase = 0.0;
         }
 
-        float lookupPhase = phase + phaseModulation;
-        wrap(lookupPhase);
-        phase += frequency / sampleRate;
+        float lookup_phase = phase + phase_modulation;
+        wrap(lookup_phase);
+        phase += frequency / samplerate;
         wrap(phase);
 
-        redux(lookupPhase, phaseResolution);
+        redux(lookup_phase, phase_resolution);
 
-        float output = sine(lookupPhase * 4096.);
+        float output = sine(lookup_phase * 4096.);
 
         filter(output);
         return output;
     }
 
-    void setSampleRate(double sampleRate) {
-        this->sampleRate = sampleRate;
+    void setSampleRate(double _samplerate) {
+        this->samplerate = _samplerate;
     }
 
 private:
-    double sampleRate;
+    double samplerate;
     float phase;
     float history;
 
     float sine(float x) {
         // x is scaled 0<=x<4096
-        const float A = -0.40319426317E-08;
-        const float B = 0.21683205691E+03;
-        const float C = 0.28463350538E-04;
-        const float D = -0.30774648337E-02;
+        const float a = -0.40319426317E-08;
+        const float b = 0.21683205691E+03;
+        const float c = 0.28463350538E-04;
+        const float d = -0.30774648337E-02;
         float y;
 
         bool negate = false;
@@ -59,7 +59,7 @@ private:
         }
         if (x > 1024)
             x = 2048 - x;
-        y = (A + x) / (B + C * x * x) + D * x;
+        y = (a + x) / (b + c * x * x) + d * x;
         if (negate)
             return (float)(-y);
         else

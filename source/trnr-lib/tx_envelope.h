@@ -3,189 +3,189 @@
 namespace trnr::core::lib {
 
 enum state {
-    Idle = 0,
-    Attack1,
-    Attack2,
-    Hold,
-    Decay1,
-    Decay2,
-    Sustain,
-    Release1,
-    Release2
+    idle = 0,
+    attack1,
+    attack2,
+    hold,
+    decay1,
+    decay2,
+    sustain,
+    release1,
+    release2
 };
 
 class tx_envelope {
 
 public:
-    float attackRate;
-    float attackCurvature;
-    float holdRate;
-    float decayRate;
-    float decayLevel;
-    float sustainLevel;
-    float releaseRate;
-    float releaseCurvature;
+    float attack_rate;
+    float attack_curvature;
+    float hold_rate;
+    float decay_rate;
+    float decay_level;
+    float sustain_level;
+    float release_rate;
+    float release_curvature;
 
-    tx_envelope(double sampleRate)
-        : sampleRate { sampleRate }
-        , attackRate { 0 }
-        , attackCurvature { 0 }
-        , holdRate { 0 }
-        , decayRate { 0 }
-        , decayLevel { 0 }
-        , sustainLevel { 0 }
-        , releaseRate { 0 }
-        , releaseCurvature { 0 }
+    tx_envelope(double _samplerate)
+        : samplerate { _samplerate }
+        , attack_rate { 0 }
+        , attack_curvature { 0 }
+        , hold_rate { 0 }
+        , decay_rate { 0 }
+        , decay_level { 0 }
+        , sustain_level { 0 }
+        , release_rate { 0 }
+        , release_curvature { 0 }
         , level { 0.f }
         , phase { 0 }
-        , state { Idle }
-        , startLevel { 0.f }
+        , state { idle }
+        , start_level { 0.f }
         , h1 { 0. }
         , h2 { 0. }
         , h3 { 0. }
     {
     }
 
-    float processSample(bool gate, bool trigger) {
+    float process_sample(bool gate, bool trigger) {
 
-        float attackSamp = msToSamples(attackRate);
-        int holdSamp = msToSamples(holdRate);
-        float decaySamp = msToSamples(decayRate);
-        float releaseSamp = msToSamples(releaseRate);
+        float attack_samp = ms_to_samples(attack_rate);
+        int hold_samp = ms_to_samples(hold_rate);
+        float decay_samp = ms_to_samples(decay_rate);
+        float release_samp = ms_to_samples(release_rate);
 
-        int attackMidX1 = static_cast<int>((1 - attackCurvature) * attackSamp);
-        int attackMidX2 = static_cast<int>(attackCurvature * attackSamp);
-        int decayMidX1 = static_cast<int>(decayLevel * decaySamp);
-        int decayMidX2 = static_cast<int>((1 - decayLevel) * decaySamp);
-        int releaseMidX1 = static_cast<int>(releaseCurvature * releaseSamp);
-        int releaseMidX2 = static_cast<int>((1 - releaseCurvature) * releaseSamp);
+        int attack_mid_x1 = static_cast<int>((1 - attack_curvature) * attack_samp);
+        int attack_mid_x2 = static_cast<int>(attack_curvature * attack_samp);
+        int decay_mid_x1 = static_cast<int>(decay_level * decay_samp);
+        int decay_mid_x2 = static_cast<int>((1 - decay_level) * decay_samp);
+        int release_mid_x1 = static_cast<int>(release_curvature * release_samp);
+        int release_mid_x2 = static_cast<int>((1 - release_curvature) * release_samp);
 
         // if note on is triggered, transition to attack phase
         if (trigger) {
-            startLevel = 0.f;
+            start_level = 0.f;
             phase = 0;
-            state = Attack1;
+            state = attack1;
         }
         // attack 1st half
-        if (state == Attack1) {
+        if (state == attack1) {
             // while in attack phase
-            if (phase < attackMidX1) {
-                level = lerp(0, startLevel, attackMidX1, attackCurvature, phase);
+            if (phase < attack_mid_x1) {
+                level = lerp(0, start_level, attack_mid_x1, attack_curvature, phase);
                 phase += 1;
             }
             // reset phase if parameter was changed
-            if (phase > attackMidX1) {
-                phase = attackMidX1;
+            if (phase > attack_mid_x1) {
+                phase = attack_mid_x1;
             }
             // if attack phase is done, transition to decay phase
-            if (phase == attackMidX1) {
-                state = Attack2;
+            if (phase == attack_mid_x1) {
+                state = attack2;
                 phase = 0;
             }
         }
         // attack 2nd half
-        if (state == Attack2) {
+        if (state == attack2) {
             // while in attack phase
-            if (phase < attackMidX2) {
-                level = lerp(0, attackCurvature, attackMidX2, 1, phase);
+            if (phase < attack_mid_x2) {
+                level = lerp(0, attack_curvature, attack_mid_x2, 1, phase);
                 phase += 1;
             }
             // reset phase if parameter was changed
-            if (phase > attackMidX2) {
-                phase = attackMidX2;
+            if (phase > attack_mid_x2) {
+                phase = attack_mid_x2;
             }
             // if attack phase is done, transition to decay phase
-            if (phase == attackMidX2) {
-                state = Hold;
+            if (phase == attack_mid_x2) {
+                state = hold;
                 phase = 0;
             }
         }
         // hold
-        if (state == Hold) {
-            if (phase < holdSamp) {
+        if (state == hold) {
+            if (phase < hold_samp) {
                 level = 1.0;
                 phase += 1;
             }
-            if (phase > holdSamp) {
-                phase = holdSamp;
+            if (phase > hold_samp) {
+                phase = hold_samp;
             }
-            if (phase == holdSamp) {
-                state = Decay1;
+            if (phase == hold_samp) {
+                state = decay1;
                 phase = 0;
             }
         }
         // decay 1st half
-        if (state == Decay1) {
+        if (state == decay1) {
             // while in decay phase
-            if (phase < decayMidX1) {
-                level = lerp(0, 1, decayMidX1, decayLevel, phase);
+            if (phase < decay_mid_x1) {
+                level = lerp(0, 1, decay_mid_x1, decay_level, phase);
                 phase += 1;
             }
             // reset phase if parameter was changed
-            if (phase > decayMidX1) {
-                phase = decayMidX1;
+            if (phase > decay_mid_x1) {
+                phase = decay_mid_x1;
             }
             // if decay phase is done, transition to sustain phase
-            if (phase == decayMidX1) {
-                state = Decay2;
+            if (phase == decay_mid_x1) {
+                state = decay2;
                 phase = 0;
             }
         }
         // decay 2nd half
-        if (state == Decay2) {
+        if (state == decay2) {
             // while in decay phase
-            if (phase < decayMidX2) {
-                level = lerp(0, decayLevel, decayMidX2, sustainLevel, phase);
+            if (phase < decay_mid_x2) {
+                level = lerp(0, decay_level, decay_mid_x2, sustain_level, phase);
                 phase += 1;
             }
             // reset phase if parameter was changed
-            if (phase > decayMidX2) {
-                phase = decayMidX2;
+            if (phase > decay_mid_x2) {
+                phase = decay_mid_x2;
             }
             // if decay phase is done, transition to sustain phase
-            if (phase == decayMidX2) {
-                state = Sustain;
+            if (phase == decay_mid_x2) {
+                state = sustain;
                 phase = 0;
-                level = sustainLevel;
+                level = sustain_level;
             }
         }
         // while sustain phase: if note off is triggered, transition to release phase
-        if (state == Sustain && !gate) {
-            state = Release1;
-            level = sustainLevel;
+        if (state == sustain && !gate) {
+            state = release1;
+            level = sustain_level;
         }
         // release 1st half
-        if (state == Release1) {
+        if (state == release1) {
             // while in release phase
-            if (phase < releaseMidX1) {
-                level = lerp(0, sustainLevel, releaseMidX1, releaseCurvature, phase);
+            if (phase < release_mid_x1) {
+                level = lerp(0, sustain_level, release_mid_x1, release_curvature, phase);
                 phase += 1;
             }
             // reset phase if parameter was changed
-            if (phase > releaseMidX1) {
-                phase = releaseMidX1;
+            if (phase > release_mid_x1) {
+                phase = release_mid_x1;
             }
             // transition to 2nd release half
-            if (phase == releaseMidX1) {
+            if (phase == release_mid_x1) {
                 phase = 0;
-                state = Release2;
+                state = release2;
             }
         }
         // release 2nd half
-        if (state == Release2) {
+        if (state == release2) {
             // while in release phase
-            if (phase < releaseMidX2) {
-                level = lerp(0, releaseCurvature, releaseMidX2, 0, phase);
+            if (phase < release_mid_x2) {
+                level = lerp(0, release_curvature, release_mid_x2, 0, phase);
                 phase += 1;
             }
             // reset phase if parameter was changed
-            if (phase > releaseMidX2) {
-                phase = releaseMidX2;
+            if (phase > release_mid_x2) {
+                phase = release_mid_x2;
             }
             // reset
-            if (phase == releaseMidX2) {
+            if (phase == release_mid_x2) {
                 phase = 0;
-                state = Idle;
+                state = idle;
                 level = 0;
             }
         }
@@ -193,18 +193,18 @@ public:
         return smooth(level);
     }
 
-    bool isBusy() { return state != 0; }
+    bool is_busy() { return state != 0; }
 
-    void setSampleRate(double sampleRate) {
-        this->sampleRate = sampleRate;
+    void set_samplerate(double sampleRate) {
+        this->samplerate = sampleRate;
     }
     
 private:
-    double sampleRate;
+    double samplerate;
     int phase;
     float level;
     state state;
-    float startLevel;
+    float start_level;
     float h1;
     float h2;
     float h3;
@@ -219,6 +219,6 @@ private:
         return (h1 + h2 + h3) / 3.f;
     }
 
-    float msToSamples(float ms) { return ms * sampleRate / 1000.f; }
+    float ms_to_samples(float ms) { return ms * samplerate / 1000.f; }
 };   
 }
