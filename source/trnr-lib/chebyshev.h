@@ -2,9 +2,10 @@
 #include <math.h>
 #include <array>
 
+namespace trnr::core::lib {
 class chebyshev {
 public:
-    void processSample(double& input, double frequency, double samplerate) {
+    void process_sample(double& input, double frequency, double samplerate) {
 
         if (frequency >= 20000.f) {
             frequency = 20000.f;
@@ -14,8 +15,8 @@ public:
         auto K = tanf(M_PI * frequency / samplerate);
 
         // Now we calc some Coefficients :
-        auto sg = sinh(passbandRipple);
-        auto cg = cosh(passbandRipple);
+        auto sg = sinh(passband_ripple);
+        auto cg = cosh(passband_ripple);
         cg *= cg;
 
         std::array<double, 4> coeff;
@@ -27,46 +28,47 @@ public:
         K *= K; // (just to optimize it a little bit)
 
         // Calculate the first biquad:
-        A0 = 1 / (coeff[1] + K + coeff[0]);
-        A1 = 2 * (coeff[0] - K) * A0;
-        A2 = (coeff[1] - K - coeff[0]) * A0;
-        B0 = A0 * K;
-        B1 = 2 * B0;
-        B2 = B0;
+        a0 = 1 / (coeff[1] + K + coeff[0]);
+        a1 = 2 * (coeff[0] - K) * a0;
+        a2 = (coeff[1] - K - coeff[0]) * a0;
+        b0 = a0 * K;
+        b1 = 2 * b0;
+        b2 = b0;
 
         // Calculate the second biquad:
-        A3 = 1 / (coeff[3] + K + coeff[2]);
-        A4 = 2 * (coeff[2] - K) * A3;
-        A5 = (coeff[3] - K - coeff[2]) * A3;
-        B3 = A3 * K;
-        B4 = 2 * B3;
-        B5 = B3;
+        a3 = 1 / (coeff[3] + K + coeff[2]);
+        a4 = 2 * (coeff[2] - K) * a3;
+        a5 = (coeff[3] - K - coeff[2]) * a3;
+        b3 = a3 * K;
+        b4 = 2 * b3;
+        b5 = b3;
 
         // Then calculate the output as follows:
-        auto Stage1 = B0 * input + State0;
-        State0 = B1 * input + A1 * Stage1 + State1;
-        State1 = B2 * input + A2 * Stage1;
-        input = B3 * Stage1 + State2;
-        State2 = B4 * Stage1 + A4 * input + State3;
-        State3 = B5 * Stage1 + A5 * input;
+        auto Stage1 = b0 * input + state0;
+        state0 = b1 * input + a1 * Stage1 + state1;
+        state1 = b2 * input + a2 * Stage1;
+        input = b3 * Stage1 + state2;
+        state2 = b4 * Stage1 + a4 * input + state3;
+        state3 = b5 * Stage1 + a5 * input;
     }
 
 private:
-    double A0 = 0;
-    double A1 = 0;
-    double A2 = 0;
-    double A3 = 0;
-    double A4 = 0;
-    double A5 = 0;
-    double B0 = 0;
-    double B1 = 0;
-    double B2 = 0;
-    double B3 = 0;
-    double B4 = 0;
-    double B5 = 0;
-    double State0 = 0;
-    double State1 = 0;
-    double State2 = 0;
-    double State3 = 0;
-    double passbandRipple = 1;
+    double a0 = 0;
+    double a1 = 0;
+    double a2 = 0;
+    double a3 = 0;
+    double a4 = 0;
+    double a5 = 0;
+    double b0 = 0;
+    double b1 = 0;
+    double b2 = 0;
+    double b3 = 0;
+    double b4 = 0;
+    double b5 = 0;
+    double state0 = 0;
+    double state1 = 0;
+    double state2 = 0;
+    double state3 = 0;
+    double passband_ripple = 1;
 };
+}

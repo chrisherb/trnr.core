@@ -3,6 +3,7 @@
 #include "../../trnr-lib/ulaw.h"
 
 using namespace c74::min;
+using namespace trnr::core::lib;
 
 class retrobuf : public object<retrobuf>, public vector_operator<> {
 public:
@@ -107,8 +108,8 @@ public:
                     // calculate imaging filter frequency + deviation
                     double filterFrequency = ((resamplerate / 2) * noteRatio) * deviation;
 
-                    filter1.processSample(outputL, filterFrequency, hostSamplerate);
-                    filter2.processSample(outputR, filterFrequency, hostSamplerate);
+                    filter1.process_sample(outputL, filterFrequency, hostSamplerate);
+                    filter2.process_sample(outputR, filterFrequency, hostSamplerate);
                 }
 
                 out1[i] = outputL;
