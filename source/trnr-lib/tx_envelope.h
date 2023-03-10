@@ -1,4 +1,5 @@
 #pragma once
+#include <array>
 
 namespace trnr::core::lib {
 
@@ -15,27 +16,32 @@ enum state {
 };
 
 class tx_envelope {
-
 public:
-    float attack_rate;
-    float attack_curvature;
+    float attack1_rate;
+    float attack1_level;
+    float attack2_rate;
     float hold_rate;
-    float decay_rate;
-    float decay_level;
+    float decay1_rate;
+    float decay1_level;
+    float decay2_rate;
     float sustain_level;
-    float release_rate;
-    float release_curvature;
+    float release1_rate;
+    float release1_level;
+    float release2_rate;
 
     tx_envelope(double _samplerate)
         : samplerate { _samplerate }
-        , attack_rate { 0 }
-        , attack_curvature { 0 }
+        , attack1_rate { 0 }
+        , attack1_level { 0 }
+        , attack2_rate { 0 }
         , hold_rate { 0 }
-        , decay_rate { 0 }
-        , decay_level { 0 }
+        , decay1_rate { 0 }
+        , decay1_level { 0 }
+        , decay2_rate { 0 }
         , sustain_level { 0 }
-        , release_rate { 0 }
-        , release_curvature { 0 }
+        , release1_rate { 0 }
+        , release1_level { 0 }
+        , release2_rate { 0 }
         , level { 0.f }
         , phase { 0 }
         , state { idle }
@@ -48,17 +54,13 @@ public:
 
     float process_sample(bool gate, bool trigger) {
 
-        float attack_samp = ms_to_samples(attack_rate);
+        int attack_mid_x1 = ms_to_samples(attack1_rate);
+        int attack_mid_x2 = ms_to_samples(attack2_rate);
         int hold_samp = ms_to_samples(hold_rate);
-        float decay_samp = ms_to_samples(decay_rate);
-        float release_samp = ms_to_samples(release_rate);
-
-        int attack_mid_x1 = static_cast<int>((1 - attack_curvature) * attack_samp);
-        int attack_mid_x2 = static_cast<int>(attack_curvature * attack_samp);
-        int decay_mid_x1 = static_cast<int>(decay_level * decay_samp);
-        int decay_mid_x2 = static_cast<int>((1 - decay_level) * decay_samp);
-        int release_mid_x1 = static_cast<int>(release_curvature * release_samp);
-        int release_mid_x2 = static_cast<int>((1 - release_curvature) * release_samp);
+        int decay_mid_x1 = ms_to_samples(decay1_rate);
+        int decay_mid_x2 = ms_to_samples(decay2_rate);
+        int release_mid_x1 = ms_to_samples(release1_rate);
+        int release_mid_x2 = ms_to_samples(release2_rate);
 
         // if note on is triggered, transition to attack phase
         if (trigger) {
@@ -70,7 +72,7 @@ public:
         if (state == attack1) {
             // while in attack phase
             if (phase < attack_mid_x1) {
-                level = lerp(0, start_level, attack_mid_x1, attack_curvature, phase);
+                level = lerp(0, start_level, attack_mid_x1, attack1_level, phase);
                 phase += 1;
             }
             // reset phase if parameter was changed
@@ -87,7 +89,7 @@ public:
         if (state == attack2) {
             // while in attack phase
             if (phase < attack_mid_x2) {
-                level = lerp(0, attack_curvature, attack_mid_x2, 1, phase);
+                level = lerp(0, attack1_level, attack_mid_x2, 1, phase);
                 phase += 1;
             }
             // reset phase if parameter was changed
@@ -118,7 +120,7 @@ public:
         if (state == decay1) {
             // while in decay phase
             if (phase < decay_mid_x1) {
-                level = lerp(0, 1, decay_mid_x1, decay_level, phase);
+                level = lerp(0, 1, decay_mid_x1, decay1_level, phase);
                 phase += 1;
             }
             // reset phase if parameter was changed
@@ -135,7 +137,7 @@ public:
         if (state == decay2) {
             // while in decay phase
             if (phase < decay_mid_x2) {
-                level = lerp(0, decay_level, decay_mid_x2, sustain_level, phase);
+                level = lerp(0, decay1_level, decay_mid_x2, sustain_level, phase);
                 phase += 1;
             }
             // reset phase if parameter was changed
@@ -158,7 +160,7 @@ public:
         if (state == release1) {
             // while in release phase
             if (phase < release_mid_x1) {
-                level = lerp(0, sustain_level, release_mid_x1, release_curvature, phase);
+                level = lerp(0, sustain_level, release_mid_x1, release1_level, phase);
                 phase += 1;
             }
             // reset phase if parameter was changed
@@ -175,7 +177,7 @@ public:
         if (state == release2) {
             // while in release phase
             if (phase < release_mid_x2) {
-                level = lerp(0, release_curvature, release_mid_x2, 0, phase);
+                level = lerp(0, release1_level, release_mid_x2, 0, phase);
                 phase += 1;
             }
             // reset phase if parameter was changed
@@ -198,6 +200,47 @@ public:
     void set_samplerate(double sampleRate) {
         this->samplerate = sampleRate;
     }
+
+    // returns the x/y coordinates of the envelope points for graphical representation.
+    std::array<std::array<float, 2>, 9> calc_coordinates() {
+        // point a
+        coordinates[0][0] = 0;
+        coordinates[0][1] = 0;
+
+        // point b (attack mid point)
+        coordinates[1][0] = attack1_rate;
+        coordinates[1][1] = attack1_level;
+
+        // point c (attack top)
+        coordinates[2][0] = coordinates[1][0] + attack2_rate;
+        coordinates[2][1] = 1;
+        
+        // point d (hold stage)
+        coordinates[3][0] = coordinates[2][0] + hold_rate;
+        coordinates[3][1] = 1;
+        
+        // point e (decay mid point)
+        coordinates[4][0] = coordinates[3][0] + decay1_rate;
+        coordinates[4][1] = decay1_level;
+
+        // point f (end of decay stage)
+        coordinates[5][0] = coordinates[4][0] + decay2_rate;
+        coordinates[5][1] = sustain_level;
+
+        // point g (end of sustain stage)
+        coordinates[6][0] = coordinates[5][0] + 500; // arbitrary sustain length
+        coordinates[6][1] = sustain_level;
+        
+        // point h (release mid point)
+        coordinates[7][0] = coordinates[6][0] + release1_rate;
+        coordinates[7][1] = release1_level;
+
+        // point i (end of release)
+        coordinates[8][0] = coordinates[7][0] + release2_rate;
+        coordinates[8][1] = 0;
+
+        return coordinates;
+    }
     
 private:
     double samplerate;
@@ -208,17 +251,18 @@ private:
     float h1;
     float h2;
     float h3;
+    std::array<std::array<float, 2>, 9> coordinates;
 
     float lerp(float x1, float y1, float x2, float y2, float x) { return y1 + (((x - x1) * (y2 - y1)) / (x2 - x1)); }
 
-    float smooth(float sample) {
+    int smooth(float sample) {
         h3 = h2;
         h2 = h1;
         h1 = sample;
 
-        return (h1 + h2 + h3) / 3.f;
+        return static_cast<int>((h1 + h2 + h3) / 3.f);
     }
 
     float ms_to_samples(float ms) { return ms * samplerate / 1000.f; }
-};   
+};
 }

@@ -12,8 +12,12 @@ public:
     MIN_TAGS		{"synth voice"};
     MIN_AUTHOR		{"Christopher Herb"};
 
-	inlet<> in1 {this, "(signal) FM"};
+	inlet<> in1 {this, "(signal) FM, (bang) trigger, (int) gate, (list) pitch envelope values"};
+    inlet<> in2 {this, "(list) OP1 envelope values", "list"};
+    inlet<> in3 {this, "(list) OP2 envelope values", "list"};
+    inlet<> in4 {this, "(list) OP3 envelope values", "list"};
 	outlet<> out1 {this, "(signal) Output", "signal"};
+	outlet<> out2 {this, "(list) Pitch envelope coordinates", "list"};
 
     message<> setup {this, "setup",
         MIN_FUNCTION {
@@ -30,14 +34,14 @@ public:
        }
     };
 
-    message<> trigger { this, "bang", "Trigger",
+    message<threadsafe::yes> trigger { this, "bang", "Trigger",
         MIN_FUNCTION {
             triplex_voice->trigger = true;
             return {};
         }
     };
 
-    message<> gate { this, "int", "Gate on/off",
+    message<threadsafe::yes> gate { this, "int", "Gate on/off",
         MIN_FUNCTION {
             int arg = args[0];
             if (arg > 0) {
@@ -49,7 +53,92 @@ public:
         }
     };
 
-    attribute<number, threadsafe::no, limit::clamp> velocity { this, "velocity", 100, range { 0, 127 }, 
+    message<threadsafe::yes> lists { this, "list", "Envelope values", 
+        MIN_FUNCTION {
+            auto values = from_atoms<std::vector<double>>(args);
+            if (values.size() < 7) {
+                cerr << "that's not enough values! it should be exactly 7" << endl;
+                return {};
+            }
+            float attack_rate = values.at(0);
+            float attack_slope = values.at(1);
+            float decay_rate = values.at(2);
+            float decay_slope = values.at(3);
+            float sustain_level = values.at(4);
+            float release_rate = values.at(5);
+            float release_slope = values.at(6);
+
+            float attack1_rate = attack_rate * (1 - attack_slope);
+            float attack1_level = attack_slope;
+            float attack2_rate = attack_rate * attack_slope;
+            float hold_rate = 0.1;
+            float decay1_rate = decay_rate * decay_slope;
+            float decay1_level = sustain_level + ((1 - sustain_level) * decay_slope);
+            float decay2_rate = decay_rate * (1 - decay_slope);
+            float release1_rate = release_rate * release_slope;
+            float release1_level = sustain_level * release_slope;
+            float release2_rate = release_rate * (1 - release_slope);
+
+            switch(inlet) {
+                case 0: // pitch envelope
+                    triplex_voice->pitch_env.attack1_rate = attack1_rate;
+                    triplex_voice->pitch_env.attack1_level = attack1_level;
+                    triplex_voice->pitch_env.attack2_rate = attack2_rate;
+                    triplex_voice->pitch_env.hold_rate = hold_rate;
+                    triplex_voice->pitch_env.decay1_rate = decay1_rate;
+                    triplex_voice->pitch_env.decay1_level = decay1_level;
+                    triplex_voice->pitch_env.decay2_rate = decay2_rate;
+                    triplex_voice->pitch_env.sustain_level = sustain_level;
+                    triplex_voice->pitch_env.release1_rate = release1_rate;
+                    triplex_voice->pitch_env.release1_level = release1_level;
+                    triplex_voice->pitch_env.release2_rate = release2_rate;
+                    out2.send(array_to_atoms(triplex_voice->pitch_env.calc_coordinates()));
+                    break;
+                case 1: // op1 envelope
+                    triplex_voice->op1.envelope.attack1_rate = attack1_rate;
+                    triplex_voice->op1.envelope.attack1_level = attack1_level;
+                    triplex_voice->op1.envelope.attack2_rate = attack2_rate;
+                    triplex_voice->op1.envelope.hold_rate = hold_rate;
+                    triplex_voice->op1.envelope.decay1_rate = decay1_rate;
+                    triplex_voice->op1.envelope.decay1_level = decay1_level;
+                    triplex_voice->op1.envelope.decay2_rate = decay2_rate;
+                    triplex_voice->op1.envelope.sustain_level = sustain_level;
+                    triplex_voice->op1.envelope.release1_rate = release1_rate;
+                    triplex_voice->op1.envelope.release1_level = release1_level;
+                    triplex_voice->op1.envelope.release2_rate = release2_rate;
+                    break;
+                case 2: // op2 envelope
+                    triplex_voice->op2.envelope.attack1_rate = attack1_rate;
+                    triplex_voice->op2.envelope.attack1_level = attack1_level;
+                    triplex_voice->op2.envelope.attack2_rate = attack2_rate;
+                    triplex_voice->op2.envelope.hold_rate = hold_rate;
+                    triplex_voice->op2.envelope.decay1_rate = decay1_rate;
+                    triplex_voice->op2.envelope.decay1_level = decay1_level;
+                    triplex_voice->op2.envelope.decay2_rate = decay2_rate;
+                    triplex_voice->op2.envelope.sustain_level = sustain_level;
+                    triplex_voice->op2.envelope.release1_rate = release1_rate;
+                    triplex_voice->op2.envelope.release1_level = release1_level;
+                    triplex_voice->op2.envelope.release2_rate = release2_rate;
+                    break;
+                case 3: // op3 envelope
+                    triplex_voice->op3.envelope.attack1_rate = attack1_rate;
+                    triplex_voice->op3.envelope.attack1_level = attack1_level;
+                    triplex_voice->op3.envelope.attack2_rate = attack2_rate;
+                    triplex_voice->op3.envelope.hold_rate = hold_rate;
+                    triplex_voice->op3.envelope.decay1_rate = decay1_rate;
+                    triplex_voice->op3.envelope.decay1_level = decay1_level;
+                    triplex_voice->op3.envelope.decay2_rate = decay2_rate;
+                    triplex_voice->op3.envelope.sustain_level = sustain_level;
+                    triplex_voice->op3.envelope.release1_rate = release1_rate;
+                    triplex_voice->op3.envelope.release1_level = release1_level;
+                    triplex_voice->op3.envelope.release2_rate = release2_rate;
+                    break;
+            }
+            return {};
+        }
+    };
+
+    attribute<number, threadsafe::yes, limit::clamp> velocity { this, "velocity", 100, range { 0, 127 }, 
         setter { MIN_FUNCTION {
             if (initialized) {
                 double vel = args[0];
@@ -59,7 +148,7 @@ public:
         }}
     };
     
-    attribute<number, threadsafe::no, limit::clamp> frequency { this, "frequency", 100, range { 20, 20000 }, 
+    attribute<number, threadsafe::yes, limit::clamp> frequency { this, "frequency", 100, range { 20, 20000 }, 
         setter { MIN_FUNCTION {
             if (initialized) {
                 triplex_voice->frequency = args[0];
@@ -114,83 +203,7 @@ public:
             return args;
         }}
     };
-    
-    // PITCH ENVELOPE
 
-    attribute<number, threadsafe::no, limit::clamp> pitch_attack_rate { this, "pitch_attack_rate", 10, range { 1, 20000 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->pitch_env.attack_rate = args[0];
-            }
-            return args;
-        }}
-    };
-    
-    attribute<number, threadsafe::no, limit::clamp> pitch_attack_curvature { this, "pitch_attack_curvature", 0.5, range { 0, 1 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->pitch_env.attack_curvature = args[0];
-            }
-            return args;
-        }}
-    };
-    
-    attribute<number, threadsafe::no, limit::clamp> pitch_hold_rate { this, "pitch_hold_rate", 1, range { 1, 10000 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->pitch_env.hold_rate = args[0];
-            }
-            return args;
-        }}
-    };
-    
-    attribute<number, threadsafe::no, limit::clamp> pitch_decay_rate { this, "pitch_decay_rate", 1, range { 1, 10000 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->pitch_env.decay_rate = args[0];
-            }
-            return args;
-        }}
-    };
-    
-    attribute<number, threadsafe::no, limit::clamp> pitch_decay_level { this, "pitch_decay_level", 0.75, range { 0, 1 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->pitch_env.decay_level = args[0];
-            }
-            return args;
-        }}
-    };
-    
-    attribute<number, threadsafe::no, limit::clamp> pitch_sustain_level { this, "pitch_sustain_level", 0.5, range { 0, 1 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->pitch_env.sustain_level = args[0];
-            }
-            return args;
-        }}
-    };
-    
-    attribute<number, threadsafe::no, limit::clamp> pitch_release_rate { this, "pitch_release_rate", 100, range { 1, 20000 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->pitch_env.release_rate = args[0];
-            }
-            return args;
-        }}
-    };
-    
-    attribute<number, threadsafe::no, limit::clamp> pitch_release_curvature { this, "pitch_release_curvature", 0.25, range { 0, 1 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->pitch_env.release_curvature = args[0];
-            }
-            return args;
-        }}
-    };
-
-    // OP 1
-    
     attribute<number, threadsafe::no, limit::clamp> op1_ratio { this, "op1_ratio", 1, range { 0.1, 48 }, 
         setter { MIN_FUNCTION {
             if (initialized) {
@@ -209,80 +222,6 @@ public:
         }}
     };
 
-    attribute<number, threadsafe::no, limit::clamp> op1_attack_rate { this, "op1_attack_rate", 10, range { 1, 20000 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->op1.envelope.attack_rate = args[0];
-            }
-            return args;
-        }}
-    };
-    
-    attribute<number, threadsafe::no, limit::clamp> op1_attack_curvature { this, "op1_attack_curvature", 0.5, range { 0, 1 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->op1.envelope.attack_curvature = args[0];
-            }
-            return args;
-        }}
-    };
-    
-    attribute<number, threadsafe::no, limit::clamp> op1_hold_rate { this, "op1_hold_rate", 1, range { 1, 10000 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->op1.envelope.hold_rate = args[0];
-            }
-            return args;
-        }}
-    };
-    
-    attribute<number, threadsafe::no, limit::clamp> op1_decay_rate { this, "op1_decay_rate", 1, range { 1, 10000 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->op1.envelope.decay_rate = args[0];
-            }
-            return args;
-        }}
-    };
-    
-    attribute<number, threadsafe::no, limit::clamp> op1_decay_level { this, "op1_decay_level", 0.75, range { 0, 1 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->op1.envelope.decay_level = args[0];
-            }
-            return args;
-        }}
-    };
-    
-    attribute<number, threadsafe::no, limit::clamp> op1_sustain_level { this, "op1_sustain_level", 0.5, range { 0, 1 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->op1.envelope.sustain_level = args[0];
-            }
-            return args;
-        }}
-    };
-    
-    attribute<number, threadsafe::no, limit::clamp> op1_release_rate { this, "op1_release_rate", 100, range { 1, 20000 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->op1.envelope.release_rate = args[0];
-            }
-            return args;
-        }}
-    };
-    
-    attribute<number, threadsafe::no, limit::clamp> op1_release_curvature { this, "op1_release_curvature", 0.25, range { 0, 1 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->op1.envelope.release_curvature = args[0];
-            }
-            return args;
-        }}
-    };
-
-    // // OP 2
-    
     attribute<number, threadsafe::no, limit::clamp> op2_ratio { this, "op2_ratio", 1, range { 0.1, 48 }, 
         setter { MIN_FUNCTION {
             if (initialized) {
@@ -301,80 +240,6 @@ public:
         }}
     };
 
-    attribute<number, threadsafe::no, limit::clamp> op2_attack_rate { this, "op2_attack_rate", 10, range { 1, 20000 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->op2.envelope.attack_rate = args[0];
-            }
-            return args;
-        }}
-    };
-    
-    attribute<number, threadsafe::no, limit::clamp> op2_attack_curvature { this, "op2_attack_curvature", 0.5, range { 0, 1 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->op2.envelope.attack_curvature = args[0];
-            }
-            return args;
-        }}
-    };
-    
-    attribute<number, threadsafe::no, limit::clamp> op2_hold_rate { this, "op2_hold_rate", 1, range { 1, 10000 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->op2.envelope.hold_rate = args[0];
-            }
-            return args;
-        }}
-    };
-    
-    attribute<number, threadsafe::no, limit::clamp> op2_decay_rate { this, "op2_decay_rate", 1, range { 1, 10000 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->op2.envelope.decay_rate = args[0];
-            }
-            return args;
-        }}
-    };
-    
-    attribute<number, threadsafe::no, limit::clamp> op2_decay_level { this, "op2_decay_level", 0.75, range { 0, 1 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->op2.envelope.decay_level = args[0];
-            }
-            return args;
-        }}
-    };
-    
-    attribute<number, threadsafe::no, limit::clamp> op2_sustain_level { this, "op2_sustain_level", 0.5, range { 0, 1 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->op2.envelope.sustain_level = args[0];
-            }
-            return args;
-        }}
-    };
-    
-    attribute<number, threadsafe::no, limit::clamp> op2_release_rate { this, "op2_release_rate", 100, range { 1, 20000 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->op2.envelope.release_rate = args[0];
-            }
-            return args;
-        }}
-    };
-    
-    attribute<number, threadsafe::no, limit::clamp> op2_release_curvature { this, "op2_release_curvature", 0.25, range { 0, 1 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->op2.envelope.release_curvature = args[0];
-            }
-            return args;
-        }}
-    };
-
-    // // OP 3
-    
     attribute<number, threadsafe::no, limit::clamp> op3_ratio { this, "op3_ratio", 1, range { 0.1, 48 }, 
         setter { MIN_FUNCTION {
             if (initialized) {
@@ -388,78 +253,6 @@ public:
         setter { MIN_FUNCTION {
             if (initialized) {
                 triplex_voice->op3.amplitude = args[0];
-            }
-            return args;
-        }}
-    };
-
-    attribute<number, threadsafe::no, limit::clamp> op3_attack_rate { this, "op3_attack_rate", 10, range { 1, 20000 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->op3.envelope.attack_rate = args[0];
-            }
-            return args;
-        }}
-    };
-    
-    attribute<number, threadsafe::no, limit::clamp> op3_attack_curvature { this, "op3_attack_curvature", 0.5, range { 0, 1 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->op3.envelope.attack_curvature = args[0];
-            }
-            return args;
-        }}
-    };
-    
-    attribute<number, threadsafe::no, limit::clamp> op3_hold_rate { this, "op3_hold_rate", 1, range { 1, 10000 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->op3.envelope.hold_rate = args[0];
-            }
-            return args;
-        }}
-    };
-    
-    attribute<number, threadsafe::no, limit::clamp> op3_decay_rate { this, "op3_decay_rate", 1, range { 1, 10000 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->op3.envelope.decay_rate = args[0];
-            }
-            return args;
-        }}
-    };
-    
-    attribute<number, threadsafe::no, limit::clamp> op3_decay_level { this, "op3_decay_level", 0.75, range { 0, 1 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->op3.envelope.decay_level = args[0];
-            }
-            return args;
-        }}
-    };
-    
-    attribute<number, threadsafe::no, limit::clamp> op3_sustain_level { this, "op3_sustain_level", 0.5, range { 0, 1 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->op3.envelope.sustain_level = args[0];
-            }
-            return args;
-        }}
-    };
-    
-    attribute<number, threadsafe::no, limit::clamp> op3_release_rate { this, "op3_release_rate", 100, range { 1, 20000 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->op3.envelope.release_rate = args[0];
-            }
-            return args;
-        }}
-    };
-    
-    attribute<number, threadsafe::no, limit::clamp> op3_release_curvature { this, "op3_release_curvature", 0.25, range { 0, 1 }, 
-        setter { MIN_FUNCTION {
-            if (initialized) {
-                triplex_voice->op3.envelope.release_curvature = args[0];
             }
             return args;
         }}
@@ -486,6 +279,15 @@ public:
 
 private:
     std::unique_ptr<tx_voice> triplex_voice { nullptr };
+
+    atoms array_to_atoms(std::array<std::array<float, 2>, 9> coords) {
+        atoms output;
+        output.reserve(18);
+        for (int i = 0; i < coords.size(); i++) {
+            output.insert(output.end(), coords[i].begin(), coords[i].end());
+        }
+        return output;
+    }
 };
 
 MIN_EXTERNAL(triplex);
