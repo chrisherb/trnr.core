@@ -18,6 +18,9 @@ public:
     inlet<> in4 {this, "(list) OP3 envelope values", "list"};
 	outlet<> out1 {this, "(signal) Output", "signal"};
 	outlet<> out2 {this, "(list) Pitch envelope coordinates", "list"};
+	outlet<> out3 {this, "(list) OP1 envelope coordinates", "list"};
+	outlet<> out4 {this, "(list) OP2 envelope coordinates", "list"};
+	outlet<> out5 {this, "(list) OP3 envelope coordinates", "list"};
 
     message<> setup {this, "setup",
         MIN_FUNCTION {
@@ -106,6 +109,7 @@ public:
                     triplex_voice->op1.envelope.release1_rate = release1_rate;
                     triplex_voice->op1.envelope.release1_level = release1_level;
                     triplex_voice->op1.envelope.release2_rate = release2_rate;
+                    out3.send(array_to_atoms(triplex_voice->op1.envelope.calc_coordinates()));
                     break;
                 case 2: // op2 envelope
                     triplex_voice->op2.envelope.attack1_rate = attack1_rate;
@@ -119,6 +123,7 @@ public:
                     triplex_voice->op2.envelope.release1_rate = release1_rate;
                     triplex_voice->op2.envelope.release1_level = release1_level;
                     triplex_voice->op2.envelope.release2_rate = release2_rate;
+                    out4.send(array_to_atoms(triplex_voice->op2.envelope.calc_coordinates()));
                     break;
                 case 3: // op3 envelope
                     triplex_voice->op3.envelope.attack1_rate = attack1_rate;
@@ -132,6 +137,7 @@ public:
                     triplex_voice->op3.envelope.release1_rate = release1_rate;
                     triplex_voice->op3.envelope.release1_level = release1_level;
                     triplex_voice->op3.envelope.release2_rate = release2_rate;
+                    out5.send(array_to_atoms(triplex_voice->op3.envelope.calc_coordinates()));
                     break;
             }
             return {};
