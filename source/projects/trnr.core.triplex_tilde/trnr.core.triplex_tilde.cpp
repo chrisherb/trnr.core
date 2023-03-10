@@ -63,24 +63,18 @@ public:
                 cerr << "that's not enough values! it should be exactly 7" << endl;
                 return {};
             }
-            float attack_rate = values.at(0);
-            float attack_slope = values.at(1);
-            float decay_rate = values.at(2);
-            float decay_slope = values.at(3);
-            float sustain_level = values.at(4);
-            float release_rate = values.at(5);
-            float release_slope = values.at(6);
 
-            float attack1_rate = attack_rate * (1 - attack_slope);
-            float attack1_level = attack_slope;
-            float attack2_rate = attack_rate * attack_slope;
+            float attack1_rate = values.at(0) * (1 - values.at(1));
+            float attack1_level = values.at(1);
+            float attack2_rate = values.at(0) * values.at(1);
             float hold_rate = 0.1;
-            float decay1_rate = decay_rate * decay_slope;
-            float decay1_level = sustain_level + ((1 - sustain_level) * decay_slope);
-            float decay2_rate = decay_rate * (1 - decay_slope);
-            float release1_rate = release_rate * release_slope;
-            float release1_level = sustain_level * release_slope;
-            float release2_rate = release_rate * (1 - release_slope);
+            float decay1_rate = values.at(2) * values.at(3);
+            float decay1_level = values.at(4) + ((1 - values.at(4)) * values.at(3));
+            float decay2_rate = values.at(2) * (1 - values.at(3));
+            float sustain_level = values.at(4);
+            float release1_rate = values.at(5) * values.at(6);
+            float release1_level = values.at(4) * values.at(6);
+            float release2_rate = values.at(5) * (1 - values.at(6));
 
             switch(inlet) {
                 case 0: // pitch envelope
