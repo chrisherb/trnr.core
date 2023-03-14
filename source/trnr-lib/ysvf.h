@@ -6,8 +6,8 @@
 namespace trnr::core::lib {
 
 enum filter_types {
-    highpass = 0,
-    lowpass,
+    lowpass = 0,
+    highpass,
     bandpass,
     notch
 };
