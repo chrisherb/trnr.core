@@ -27,6 +27,7 @@ public:
            auto sr = samplerate();
            filter1.set_samplerate(sr);
            filter2.set_samplerate(sr);
+           amp_env.set_samplerate(sr);
            return {};
        }
     };
@@ -192,8 +193,8 @@ private:
     chebyshev filter1;
     chebyshev filter2;
     ulaw compander;
-    tx_envelope amp_env;
-
+    tx_envelope amp_env {0};
+    
     float midi_to_ratio(float midi_note) {
         return powf(powf(2, midi_note - 60.f), 1.f / 12.f);
     }
