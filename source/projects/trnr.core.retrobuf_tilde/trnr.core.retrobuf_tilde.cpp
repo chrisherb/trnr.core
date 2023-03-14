@@ -20,8 +20,8 @@ public:
 
     message<> dspsetup {this, "dspsetup",
         MIN_FUNCTION {
-           playbackPos = -1;
-           bufferSize = 0;
+           playback_pos = -1;
+           buffer_size = 0;
            auto sr = samplerate();
            filter1.set_samplerate(sr);
            filter2.set_samplerate(sr);
@@ -31,7 +31,7 @@ public:
 
     message<> trigger { this, "bang", "Trigger the sample",
         MIN_FUNCTION {
-            if (sync) playbackPos = clamp(start, 0, bufferSize);
+            if (sync) playback_pos = clamp(start, 0, buffer_size);
             return {};
         }
     };
@@ -49,7 +49,7 @@ public:
 	attribute<bool, threadsafe::no> sync { this, "sync", true, 
         setter { MIN_FUNCTION {
             if (!args[0]) {
-                playbackPos = clamp(start, 0, bufferSize);
+                playback_pos = clamp(start, 0, buffer_size);
             }
             return args;
         }}};
@@ -67,56 +67,56 @@ public:
         double* out2 = output.samples(1);
 
         buffer_lock<> buf(buffer); // gain access to the buffer~ content
-        bufferSize = buf.frame_count();
-        size_t channelCount = buf.channel_count();
-        double bufferSamplerate = buf.samplerate();
-        double hostSamplerate = samplerate();
+        buffer_size = buf.frame_count();
+        size_t channel_count = buf.channel_count();
+        double buffer_samplerate = buf.samplerate();
+        double host_samplerate = samplerate();
 
         if (buf.valid()) {
             for (int i = 0; i < input.frame_count(); ++i) {
-                double outputL = 0;
-                double outputR = 0;
+                double output_l = 0;
+                double output_r = 0;
                 double pitch = in1[i];
                 double resamplerate = in2[i];
                 double bitrate = in3[i];
                 int jitter = in4[i];
 
-                if (playbackPos >= clamp(end, start, bufferSize)) {
+                if (playback_pos >= clamp(end, start, buffer_size)) {
                     if (loop) {
-                        playbackPos = clamp(start, 0, bufferSize);
+                        playback_pos = clamp(start, 0, buffer_size);
                     } else {
-                        playbackPos = -1;
+                        playback_pos = -1;
                     }
                 }
                     
-                double noteRatio = midiToRatio(midinote + pitch);
+                double noteRatio = midi_to_ratio(midinote + pitch);
 
-                if (playbackPos > -1) {
-                    double samplerateDivisor = hostSamplerate / clamp(resamplerate, 44, 44100);
-                    int quantizedIndex = static_cast<int>(static_cast<int>(playbackPos / samplerateDivisor) * samplerateDivisor);
+                if (playback_pos > -1) {
+                    double samplerate_divisor = host_samplerate / clamp(resamplerate, 44, 44100);
+                    int quantized_index = static_cast<int>(static_cast<int>(playback_pos / samplerate_divisor) * samplerate_divisor);
 
-                    playbackPos += noteRatio * (bufferSamplerate / hostSamplerate);
+                    playback_pos += noteRatio * (buffer_samplerate / host_samplerate);
 
-                    outputL = buf.lookup(wrap(quantizedIndex + calcJitter(jitter), bufferSize), 0);
+                    output_l = buf.lookup(wrap(quantized_index + calc_jitter(jitter), buffer_size), 0);
 
                     // get second channel if there is any
-                    if (channelCount > 0) {
-                        outputR = buf.lookup(wrap(quantizedIndex + calcJitter(jitter), bufferSize), 1);
+                    if (channel_count > 0) {
+                        output_r = buf.lookup(wrap(quantized_index + calc_jitter(jitter), buffer_size), 1);
                     } else {
-                        outputR = outputL;
+                        output_r = output_l;
                     }
 
-                    reduceBitrate(outputL, outputR, bitrate);
+                    reduce_bitrate(output_l, output_r, bitrate);
 
                     // calculate imaging filter frequency + deviation
                     double filterFrequency = ((resamplerate / 2) * noteRatio) * deviation;
 
-                    filter1.process_sample(outputL, filterFrequency);
-                    filter2.process_sample(outputR, filterFrequency);
+                    filter1.process_sample(output_l, filterFrequency);
+                    filter2.process_sample(output_r, filterFrequency);
                 }
 
-                out1[i] = outputL;
-                out2[i] = outputR;
+                out1[i] = output_l;
+                out2[i] = output_r;
             }
         }
         else {
@@ -125,17 +125,17 @@ public:
     }
 
 private:
-    double playbackPos;
-    double bufferSize;
+    double playback_pos;
+    double buffer_size;
     chebyshev filter1;
     chebyshev filter2;
     ulaw compander;
 
-    float midiToRatio(float midiNote) {
-        return powf(powf(2, midiNote - 60.f), 1.f / 12.f);
+    float midi_to_ratio(float midi_note) {
+        return powf(powf(2, midi_note - 60.f), 1.f / 12.f);
     }
 
-    void reduceBitrate(double& value1, double& value2, double bit) {
+    void reduce_bitrate(double& value1, double& value2, double bit) {
         compander.encode_samples(value1, value2);
 
         float resolution = powf(2, bit);
@@ -145,7 +145,7 @@ private:
         compander.decode_samples(value1, value2);
     }
 
-    int calcJitter(int jitter) {
+    int calc_jitter(int jitter) {
         if (jitter > 0) {
             return static_cast<int>(rand() % jitter);
         } else {
