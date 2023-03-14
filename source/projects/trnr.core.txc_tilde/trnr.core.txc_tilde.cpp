@@ -13,7 +13,7 @@ public:
     MIN_TAGS		{"synth voice"};
     MIN_AUTHOR		{"Christopher Herb"};
 
-	inlet<> in1 {this, "(signal) FM, (bang) trigger, (int) gate, (list) pitch envelope values"};
+	inlet<> in1 {this, "(bang) trigger, (int) gate"};
 	outlet<> out1 {this, "(signal) Output", "signal"};
 
     message<> setup {this, "setup",
@@ -177,23 +177,13 @@ public:
 
 	void operator()(audio_bundle input, audio_bundle output) {
 		long frames = input.frame_count();
-        
-        // double* in1 = input.samples(0);
 		double* out1 = output.samples(0);
 
         while (--frames >= 0)
 	    {    
-            // float frequency = *in1;
-
-            // triplex_voice->frequency += frequency;
-
             *out1 = triplex_voice->process_sample();
-
-			// *in1++;
 			*out1++;
         }
-
-        // filter.processblock(output.samples(), output.samples(), samplerate(), frames);
     }
 
 private:
