@@ -7,8 +7,9 @@
 namespace trnr::core::lib {
 class ynotch {
 public:
-    ynotch()
-        : A { 0.1f }
+    ynotch(double _samplerate)
+        : samplerate { _samplerate }
+        , A { 0.1f }
         , B { 1.0f }
         , C { 0.0f }
         , D { 0.1f }

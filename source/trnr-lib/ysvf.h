@@ -14,6 +14,13 @@ enum filter_types {
 
 class ysvf {
 public:
+    ysvf(double _samplerate)
+        : lowpass { _samplerate }
+        , highpass { _samplerate }
+        , bandpass { _samplerate }
+        , notch { _samplerate }
+    {}
+
     void set_samplerate(double _samplerate) {
         lowpass.set_samplerate(_samplerate);
         highpass.set_samplerate(_samplerate);

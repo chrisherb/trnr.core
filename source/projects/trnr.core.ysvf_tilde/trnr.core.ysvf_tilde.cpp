@@ -17,6 +17,13 @@ public:
 	inlet<> in5 {this, "(signal) Gain"};
 	outlet<> out1 {this, "(signal) Output1", "signal"};
 	outlet<> out2 {this, "(signal) Output2", "signal"};
+    
+    message<> dspsetup {this, "dspsetup",
+        MIN_FUNCTION {
+            state_variable_filter.set_samplerate(samplerate());
+            return {};
+       }
+    };
 
 	attribute<number, threadsafe::no, limit::clamp> edge {this, "edge", 0.1, range {0.0, 1.0}, 
         setter { MIN_FUNCTION {
@@ -61,7 +68,7 @@ public:
     }
 
 private:
-    ysvf state_variable_filter;
+    ysvf state_variable_filter { 0 };
 
     double clamp(double& value, double min, double max) {
         if (value < min) {

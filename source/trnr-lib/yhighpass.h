@@ -7,8 +7,9 @@
 namespace trnr::core::lib {
 class yhighpass {
 public:
-    yhighpass()
-        : A { 0.1f }
+    yhighpass(double _samplerate)
+        : samplerate { _samplerate }
+        , A { 0.1f }
         , B { 1.0f }
         , C { 0.0f }
         , D { 0.1f }

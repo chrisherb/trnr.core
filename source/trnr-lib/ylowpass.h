@@ -7,8 +7,9 @@
 namespace trnr::core::lib {
 class ylowpass {
 public:
-    ylowpass()
-        : A { 0.1f }
+    ylowpass(double _samplerate)
+        : samplerate { _samplerate }
+        , A { 0.1f }
         , B { 1.0f }
         , C { 0.0f }
         , D { 0.1f }
