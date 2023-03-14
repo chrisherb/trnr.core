@@ -5,7 +5,11 @@
 namespace trnr::core::lib {
 class chebyshev {
 public:
-    void process_sample(double& input, double frequency, double samplerate) {
+    void set_samplerate(double _samplerate) {
+        samplerate = _samplerate;
+    }
+
+    void process_sample(double& input, double frequency) {
 
         if (frequency >= 20000.f) {
             frequency = 20000.f;
@@ -53,6 +57,7 @@ public:
     }
 
 private:
+    double samplerate = 0;
     double a0 = 0;
     double a1 = 0;
     double a2 = 0;

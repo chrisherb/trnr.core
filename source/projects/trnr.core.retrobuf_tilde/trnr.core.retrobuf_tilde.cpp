@@ -22,6 +22,9 @@ public:
         MIN_FUNCTION {
            playbackPos = -1;
            bufferSize = 0;
+           auto sr = samplerate();
+           filter1.set_samplerate(sr);
+           filter2.set_samplerate(sr);
            return {};
        }
     };
@@ -108,8 +111,8 @@ public:
                     // calculate imaging filter frequency + deviation
                     double filterFrequency = ((resamplerate / 2) * noteRatio) * deviation;
 
-                    filter1.process_sample(outputL, filterFrequency, hostSamplerate);
-                    filter2.process_sample(outputR, filterFrequency, hostSamplerate);
+                    filter1.process_sample(outputL, filterFrequency);
+                    filter2.process_sample(outputR, filterFrequency);
                 }
 
                 out1[i] = outputL;
