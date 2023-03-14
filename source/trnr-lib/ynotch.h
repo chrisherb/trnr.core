@@ -1,3 +1,4 @@
+#pragma once
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <array>
@@ -38,6 +39,11 @@ public:
         while (fpdR < 16386)
             fpdR = rand() * UINT32_MAX;
     }
+
+    void set_samplerate(double _samplerate) {
+        samplerate = _samplerate;
+    }
+
     void setDrive(float value)
     {
         A = value * 0.9 + 0.1;
@@ -62,7 +68,7 @@ public:
     {
         F = value;
     }
-    void processblock(double** inputs, double** outputs, int sampleRate, int blockSize)
+    void processblock(double** inputs, double** outputs, int blockSize)
     {
         double* in1 = inputs[0];
         double* in2 = inputs[1];
@@ -72,7 +78,7 @@ public:
         int inFramesToProcess = blockSize;
         double overallscale = 1.0;
         overallscale /= 44100.0;
-        overallscale *= sampleRate;
+        overallscale *= samplerate;
 
         inTrimA = inTrimB;
         inTrimB = A * 10.0;
@@ -80,7 +86,7 @@ public:
         biquad[biq_freq] = pow(B, 3) * 20000.0;
         if (biquad[biq_freq] < 15.0)
             biquad[biq_freq] = 15.0;
-        biquad[biq_freq] /= sampleRate;
+        biquad[biq_freq] /= samplerate;
         biquad[biq_reso] = (pow(C, 2) * 15.0) + 0.0001;
         biquad[biq_aA0] = biquad[biq_aB0];
         biquad[biq_aA1] = biquad[biq_aB1];
@@ -108,7 +114,7 @@ public:
 
         double wet = F;
 
-        fixA[fix_freq] = fixB[fix_freq] = 20000.0 / sampleRate;
+        fixA[fix_freq] = fixB[fix_freq] = 20000.0 / samplerate;
         fixA[fix_reso] = fixB[fix_reso] = 0.7071; // butterworth Q
 
         K = tan(M_PI * fixA[fix_freq]);
@@ -240,6 +246,7 @@ public:
     }
 
 private:
+    double samplerate;
     enum {
         biq_freq,
         biq_reso,
