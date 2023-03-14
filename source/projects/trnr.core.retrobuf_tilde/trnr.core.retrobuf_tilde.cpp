@@ -89,13 +89,13 @@ public:
                     }
                 }
                     
-                double noteRatio = midi_to_ratio(midinote + pitch);
+                double note_ratio = midi_to_ratio(midinote + pitch);
 
                 if (playback_pos > -1) {
                     double samplerate_divisor = host_samplerate / clamp(resamplerate, 44, 44100);
                     int quantized_index = static_cast<int>(static_cast<int>(playback_pos / samplerate_divisor) * samplerate_divisor);
 
-                    playback_pos += noteRatio * (buffer_samplerate / host_samplerate);
+                    playback_pos += note_ratio * (buffer_samplerate / host_samplerate);
 
                     output_l = buf.lookup(wrap(quantized_index + calc_jitter(jitter), buffer_size), 0);
 
@@ -109,10 +109,10 @@ public:
                     reduce_bitrate(output_l, output_r, bitrate);
 
                     // calculate imaging filter frequency + deviation
-                    double filterFrequency = ((resamplerate / 2) * noteRatio) * deviation;
+                    double filter_frequency = ((resamplerate / 2) * note_ratio) * deviation;
 
-                    filter1.process_sample(output_l, filterFrequency);
-                    filter2.process_sample(output_r, filterFrequency);
+                    filter1.process_sample(output_l, filter_frequency);
+                    filter2.process_sample(output_r, filter_frequency);
                 }
 
                 out1[i] = output_l;
