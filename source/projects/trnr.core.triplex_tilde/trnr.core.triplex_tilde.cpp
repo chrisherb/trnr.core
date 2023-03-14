@@ -89,7 +89,7 @@ public:
                     triplex_voice->pitch_env.release1_rate = release1_rate;
                     triplex_voice->pitch_env.release1_level = release1_level;
                     triplex_voice->pitch_env.release2_rate = release2_rate;
-                    out2.send(array_to_atoms(triplex_voice->pitch_env.calc_coordinates()));
+                    out2.send(to_atoms(triplex_voice->pitch_env.calc_coordinates()));
                     break;
                 case 1: // op1 envelope
                     triplex_voice->op1.envelope.attack1_rate = attack1_rate;
@@ -103,7 +103,7 @@ public:
                     triplex_voice->op1.envelope.release1_rate = release1_rate;
                     triplex_voice->op1.envelope.release1_level = release1_level;
                     triplex_voice->op1.envelope.release2_rate = release2_rate;
-                    out3.send(array_to_atoms(triplex_voice->op1.envelope.calc_coordinates()));
+                    out3.send(to_atoms(triplex_voice->op1.envelope.calc_coordinates()));
                     break;
                 case 2: // op2 envelope
                     triplex_voice->op2.envelope.attack1_rate = attack1_rate;
@@ -117,7 +117,7 @@ public:
                     triplex_voice->op2.envelope.release1_rate = release1_rate;
                     triplex_voice->op2.envelope.release1_level = release1_level;
                     triplex_voice->op2.envelope.release2_rate = release2_rate;
-                    out4.send(array_to_atoms(triplex_voice->op2.envelope.calc_coordinates()));
+                    out4.send(to_atoms(triplex_voice->op2.envelope.calc_coordinates()));
                     break;
                 case 3: // op3 envelope
                     triplex_voice->op3.envelope.attack1_rate = attack1_rate;
@@ -131,7 +131,7 @@ public:
                     triplex_voice->op3.envelope.release1_rate = release1_rate;
                     triplex_voice->op3.envelope.release1_level = release1_level;
                     triplex_voice->op3.envelope.release2_rate = release2_rate;
-                    out5.send(array_to_atoms(triplex_voice->op3.envelope.calc_coordinates()));
+                    out5.send(to_atoms(triplex_voice->op3.envelope.calc_coordinates()));
                     break;
             }
             return {};
@@ -280,14 +280,12 @@ public:
 private:
     std::unique_ptr<tx_voice> triplex_voice { nullptr };
 
-    atoms array_to_atoms(std::array<std::array<float, 2>, 9> coords) {
-        atoms output;
-        output.reserve(18);
-        for (int i = 0; i < coords.size(); i++) {
-            output.insert(output.end(), coords[i].begin(), coords[i].end());
-        }
-        return output;
-    }
+    // atoms array_to_atoms(std::array<float, 18> coords) {
+    //     atoms output;
+    //     output.reserve(18);
+    //     output.insert(output.end(), coords.begin(), coords.end());
+    //     return output;
+    // }
 };
 
 MIN_EXTERNAL(triplex);

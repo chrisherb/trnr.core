@@ -201,45 +201,58 @@ public:
         this->samplerate = sampleRate;
     }
 
-    // returns the x/y coordinates of the envelope points for graphical representation.
-    std::array<std::array<float, 2>, 9> calc_coordinates() {
-        // point a
-        coordinates[0][0] = 0;
-        coordinates[0][1] = 0;
+    // returns the x/y coordinates of the envelope points as a list for graphical representation.
+    std::array<float, 18> calc_coordinates() {
 
-        // point b (attack mid point)
-        coordinates[1][0] = attack1_rate;
-        coordinates[1][1] = attack1_level;
+        float a_x = 0;
+        float a_y = 0;
 
-        // point c (attack top)
-        coordinates[2][0] = coordinates[1][0] + attack2_rate;
-        coordinates[2][1] = 1;
+        float b_x = attack1_rate;
+        float b_y = attack1_level;
+
+        float c_x = b_x + attack2_rate;
+        float c_y = 1;
+
+        float d_x = c_x + hold_rate;
+        float d_y = 1;
         
-        // point d (hold stage)
-        coordinates[3][0] = coordinates[2][0] + hold_rate;
-        coordinates[3][1] = 1;
-        
-        // point e (decay mid point)
-        coordinates[4][0] = coordinates[3][0] + decay1_rate;
-        coordinates[4][1] = decay1_level;
+        float e_x = d_x + decay1_rate;
+        float e_y = decay1_level;
 
-        // point f (end of decay stage)
-        coordinates[5][0] = coordinates[4][0] + decay2_rate;
-        coordinates[5][1] = sustain_level;
+        float f_x = e_x + decay2_rate;
+        float f_y = sustain_level;
 
-        // point g (end of sustain stage)
-        coordinates[6][0] = coordinates[5][0] + 500; // arbitrary sustain length
-        coordinates[6][1] = sustain_level;
-        
-        // point h (release mid point)
-        coordinates[7][0] = coordinates[6][0] + release1_rate;
-        coordinates[7][1] = release1_level;
+        float g_x = f_x + 500;
+        float g_y = sustain_level;
 
-        // point i (end of release)
-        coordinates[8][0] = coordinates[7][0] + release2_rate;
-        coordinates[8][1] = 0;
+        float h_x = g_x + release1_rate;
+        float h_y = release1_level;
 
-        return coordinates;
+        float i_x = h_x + release2_rate;
+        float i_y = 0;
+
+        float total = i_x;
+
+        return {
+            a_x,
+            a_y,
+            b_x / total,
+            b_y,
+            c_x / total,
+            c_y,
+            d_x / total,
+            d_y,
+            e_x / total,
+            e_y,
+            f_x / total,
+            f_y,
+            g_x / total,
+            g_y,
+            h_x / total,
+            h_y,
+            i_x / total,
+            i_y
+        };
     }
     
 private:
@@ -251,7 +264,6 @@ private:
     float h1;
     float h2;
     float h3;
-    std::array<std::array<float, 2>, 9> coordinates;
 
     float lerp(float x1, float y1, float x2, float y2, float x) { return y1 + (((x - x1) * (y2 - y1)) / (x2 - x1)); }
 
