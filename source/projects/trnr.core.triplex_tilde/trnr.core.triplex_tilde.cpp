@@ -279,13 +279,6 @@ public:
 
 private:
     std::unique_ptr<tx_voice> triplex_voice { nullptr };
-
-    // atoms array_to_atoms(std::array<float, 18> coords) {
-    //     atoms output;
-    //     output.reserve(18);
-    //     output.insert(output.end(), coords.begin(), coords.end());
-    //     return output;
-    // }
 };
 
 MIN_EXTERNAL(triplex);
