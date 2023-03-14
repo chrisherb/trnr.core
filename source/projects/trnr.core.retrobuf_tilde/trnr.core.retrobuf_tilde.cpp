@@ -1,6 +1,7 @@
 #include "c74_min.h"
 #include "../../trnr-lib/chebyshev.h"
 #include "../../trnr-lib/ulaw.h"
+#include "../../trnr-lib/tx_envelope.h"
 
 using namespace c74::min;
 using namespace trnr::core::lib;
@@ -11,12 +12,13 @@ public:
     MIN_TAGS		{ "audio, sampling" };
     MIN_AUTHOR		{ "Christopher Herb" };
 
-    inlet<>  in1 { this, "(signal) Pitch" };
+    inlet<>  in1 { this, "(signal) Pitch, (bang) trigger, (int) gate on/off, (list) envelope values" };
     inlet<>  in2 { this, "(signal) Samplerate" };
     inlet<>  in3 { this, "(signal) Bitrate" };
     inlet<>  in4 { this, "(signal) Jitter" };
 	outlet<> out1 {this, "(signal) Output1", "signal"};
 	outlet<> out2 {this, "(signal) Output2", "signal"};
+    outlet<> out3 {this, "(list) Amp envelope coordinates", "list"};
 
     message<> dspsetup {this, "dspsetup",
         MIN_FUNCTION {
@@ -29,9 +31,64 @@ public:
        }
     };
 
-    message<> trigger { this, "bang", "Trigger the sample",
+    message<> bang { this, "bang", "Trigger the sample/envelope",
         MIN_FUNCTION {
             if (sync) playback_pos = clamp(start, 0, buffer_size);
+            trigger = true;
+            return {};
+        }
+    };
+    
+    message<threadsafe::yes> integer { this, "int", "Gate on/off",
+        MIN_FUNCTION {
+            int arg = args[0];
+            if (arg > 0) {
+                gate = true;
+            } else {
+                gate = false;
+            }
+            return {};
+        }
+    };
+
+    message<threadsafe::yes> list { this, "list", "Envelope values", 
+        MIN_FUNCTION {
+            auto values = from_atoms<std::vector<double>>(args);
+            if (values.size() < 7) {
+                cerr << "that's not enough values! it should be exactly 7" << endl;
+                return {};
+            }
+
+            float attack1_rate = values.at(0) * (1 - values.at(1));
+            float attack1_level = values.at(1);
+            float attack2_rate = values.at(0) * values.at(1);
+            float hold_rate = 0.1;
+            float decay1_rate = values.at(2) * values.at(3);
+            float decay1_level = values.at(4) + ((1 - values.at(4)) * values.at(3));
+            float decay2_rate = values.at(2) * (1 - values.at(3));
+            float sustain_level = values.at(4);
+            float release1_rate = values.at(5) * values.at(6);
+            float release1_level = values.at(4) * values.at(6);
+            float release2_rate = values.at(5) * (1 - values.at(6));
+
+            switch(inlet) {
+                case 0: // amp envelope
+                    amp_env.attack1_rate = attack1_rate;
+                    amp_env.attack1_level = attack1_level;
+                    amp_env.attack2_rate = attack2_rate;
+                    amp_env.hold_rate = hold_rate;
+                    amp_env.decay1_rate = decay1_rate;
+                    amp_env.decay1_level = decay1_level;
+                    amp_env.decay2_rate = decay2_rate;
+                    amp_env.sustain_level = sustain_level;
+                    amp_env.release1_rate = release1_rate;
+                    amp_env.release1_level = release1_level;
+                    amp_env.release2_rate = release2_rate;
+                    out2.send(to_atoms(amp_env.calc_coordinates()));
+                    break;
+                case 1: // filter envelope
+                    break;
+            }
             return {};
         }
     };
@@ -115,8 +172,11 @@ public:
                     filter2.process_sample(output_r, filter_frequency);
                 }
 
-                out1[i] = output_l;
-                out2[i] = output_r;
+                float amplitude = amp_env.process_sample(gate, trigger);
+                trigger = false;
+
+                out1[i] = output_l * amplitude;
+                out2[i] = output_r * amplitude;
             }
         }
         else {
@@ -127,9 +187,12 @@ public:
 private:
     double playback_pos;
     double buffer_size;
+    bool trigger;
+    bool gate;
     chebyshev filter1;
     chebyshev filter2;
     ulaw compander;
+    tx_envelope amp_env;
 
     float midi_to_ratio(float midi_note) {
         return powf(powf(2, midi_note - 60.f), 1.f / 12.f);
