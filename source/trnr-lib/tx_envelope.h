@@ -64,7 +64,7 @@ public:
 
         // if note on is triggered, transition to attack phase
         if (trigger) {
-            start_level = 0.f;
+            start_level = level;
             phase = 0;
             state = attack1;
         }
@@ -255,12 +255,12 @@ private:
 
     float lerp(float x1, float y1, float x2, float y2, float x) { return y1 + (((x - x1) * (y2 - y1)) / (x2 - x1)); }
 
-    int smooth(float sample) {
+    float smooth(float sample) {
         h3 = h2;
         h2 = h1;
         h1 = sample;
 
-        return static_cast<int>((h1 + h2 + h3) / 3.f);
+        return (h1 + h2 + h3) / 3.f;
     }
 
     float ms_to_samples(float ms) { return ms * samplerate / 1000.f; }
