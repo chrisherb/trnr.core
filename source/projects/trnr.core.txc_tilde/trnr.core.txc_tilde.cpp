@@ -188,7 +188,6 @@ public:
 
 private:
     std::unique_ptr<tx_voice> triplex_voice { nullptr };
-    ylowpass filter;
 
     float scale(float input, float rangeMin, float rangeMax, float exponent)
     {
