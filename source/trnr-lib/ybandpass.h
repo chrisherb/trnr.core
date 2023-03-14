@@ -45,27 +45,27 @@ public:
         samplerate = _samplerate;
     }
 
-    void setDrive(float value)
+    void set_drive(float value)
     {
         A = value * 0.9 + 0.1;
     }
-    void setFrequency(float value)
+    void set_frequency(float value)
     {
         B = value;
     }
-    void setResonance(float value)
+    void set_resonance(float value)
     {
         C = value;
     }
-    void setEdge(float value)
+    void set_edge(float value)
     {
         D = value;
     }
-    void setOutput(float value)
+    void set_output(float value)
     {
         E = value;
     }
-    void setMix(float value)
+    void set_mix(float value)
     {
         F = value;
     }

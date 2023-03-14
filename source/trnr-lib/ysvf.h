@@ -33,45 +33,45 @@ public:
     }
 
     void set_drive(float value) {
-        lowpass.setDrive(value);
-        highpass.setDrive(value);
-        bandpass.setDrive(value);
-        notch.setDrive(value);
+        lowpass.set_drive(value);
+        highpass.set_drive(value);
+        bandpass.set_drive(value);
+        notch.set_drive(value);
     }
 
     void set_frequency(float value) {
-        lowpass.setFrequency(value);
-        highpass.setFrequency(value);
-        bandpass.setFrequency(value);
-        notch.setFrequency(value);
+        lowpass.set_frequency(value);
+        highpass.set_frequency(value);
+        bandpass.set_frequency(value);
+        notch.set_frequency(value);
     }
 
     void set_resonance(float value) {
-        lowpass.setResonance(value);
-        highpass.setResonance(value);
-        bandpass.setResonance(value);
-        notch.setResonance(value);
+        lowpass.set_resonance(value);
+        highpass.set_resonance(value);
+        bandpass.set_resonance(value);
+        notch.set_resonance(value);
     }
 
     void set_edge(float value) {
-        lowpass.setEdge(value);
-        highpass.setEdge(value);
-        bandpass.setEdge(value);
-        notch.setEdge(value);
+        lowpass.set_edge(value);
+        highpass.set_edge(value);
+        bandpass.set_edge(value);
+        notch.set_edge(value);
     }
 
     void set_output(float value) {
-        lowpass.setOutput(value);
-        highpass.setOutput(value);
-        bandpass.setOutput(value);
-        notch.setOutput(value);
+        lowpass.set_output(value);
+        highpass.set_output(value);
+        bandpass.set_output(value);
+        notch.set_output(value);
     }
 
     void set_mix(float value) {
-        lowpass.setMix(value);
-        highpass.setMix(value);
-        bandpass.setMix(value);
-        notch.setMix(value);
+        lowpass.set_mix(value);
+        highpass.set_mix(value);
+        bandpass.set_mix(value);
+        notch.set_mix(value);
     }
 
     void process_block(double** inputs, double** outputs, int block_size) {
