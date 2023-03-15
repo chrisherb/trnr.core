@@ -88,7 +88,7 @@ private:
 
     float redux(float& value)
     {
-        value = roundf(value * phase_resolution) / phase_resolution;
+        value = static_cast<int>(value * phase_resolution) / phase_resolution;
         return value;
     }
 };
