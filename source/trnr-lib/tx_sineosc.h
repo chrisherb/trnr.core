@@ -38,7 +38,7 @@ public:
         return output;
     }
 
-    void setSampleRate(double _samplerate) {
+    void set_samplerate(double _samplerate) {
         this->samplerate = _samplerate;
     }
 

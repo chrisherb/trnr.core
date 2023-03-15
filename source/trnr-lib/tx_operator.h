@@ -33,7 +33,7 @@ public:
 
     void set_samplerate(double samplerate) {
         this->envelope.set_samplerate(samplerate);
-        this->oscillator.setSampleRate(samplerate);
+        this->oscillator.set_samplerate(samplerate);
     }
 };
 }
