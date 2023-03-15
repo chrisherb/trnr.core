@@ -96,10 +96,10 @@ public:
         setter { MIN_FUNCTION {
             if (initialized) {
                 float phase_res = scale(args[0], 16, 2, 0.25);
-                triplex_voice->op1.oscillator.phase_resolution = phase_res;
-                triplex_voice->op2.oscillator.phase_resolution = phase_res;
-                triplex_voice->op3.oscillator.phase_resolution = phase_res;
-                triplex_voice->feedback_osc.phase_resolution = phase_res;
+                triplex_voice->op1.oscillator.set_phase_resolution(phase_res);
+                triplex_voice->op2.oscillator.set_phase_resolution(phase_res);
+                triplex_voice->op3.oscillator.set_phase_resolution(phase_res);
+                triplex_voice->feedback_osc.set_phase_resolution(phase_res);
                 triplex_voice->bit_resolution = scale(args[0], 16, 4, 1);
             }
             return args;

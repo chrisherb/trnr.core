@@ -187,9 +187,9 @@ public:
     attribute<number, threadsafe::no, limit::clamp> phase_resolution { this, "phase_resolution", 12, range { 2, 16 }, 
         setter { MIN_FUNCTION {
             if (initialized) {
-                triplex_voice->op1.oscillator.phase_resolution = args[0];
-                triplex_voice->op2.oscillator.phase_resolution = args[0];
-                triplex_voice->op3.oscillator.phase_resolution = args[0];
+                triplex_voice->op1.oscillator.set_phase_resolution(args[0]);
+                triplex_voice->op2.oscillator.set_phase_resolution(args[0]);
+                triplex_voice->op3.oscillator.set_phase_resolution(args[0]);
             }
             return args;
         }}

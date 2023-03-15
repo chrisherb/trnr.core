@@ -5,7 +5,6 @@ namespace trnr::core::lib {
 
 class tx_sineosc {
 public:
-    float phase_resolution;
     bool phase_reset;
 
     tx_sineosc(double _samplerate) 
@@ -15,6 +14,10 @@ public:
         , history { 0. }
         , phase_reset { false }
     {
+    }
+
+    void set_phase_resolution(float res) {
+        phase_resolution = powf(2, res);
     }
 
     float process_sample(bool trigger, float frequency, float phase_modulation = 0.f) {
@@ -27,7 +30,7 @@ public:
         phase += frequency / samplerate;
         wrap(phase);
 
-        redux(lookup_phase, phase_resolution);
+        redux(lookup_phase);
 
         float output = sine(lookup_phase * 4096.);
 
@@ -41,6 +44,7 @@ public:
 
 private:
     double samplerate;
+    float phase_resolution;
     float phase;
     float history;
 
@@ -82,11 +86,9 @@ private:
         return value;
     }
 
-    float redux(float& value, float resolution)
+    float redux(float& value)
     {
-        float res = powf(2, resolution);
-        value = roundf(value * res) / res;
-
+        value = roundf(value * phase_resolution) / phase_resolution;
         return value;
     }
 };
